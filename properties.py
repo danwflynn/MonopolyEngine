@@ -22,6 +22,11 @@ class Property(Space):
         self.mortgage = mortgage
         self.mortgaged = False
 
+    def effect(self, player):
+        if self.owner is not None and self.owner is not player:
+            player.charge(self.rent)
+            self.owner.balance += self.rent
+
 
 class Housing(Property):
     def __init__(self, name: str, price: int, mortgage: int, color: Color, building_cost: int,
@@ -44,6 +49,12 @@ class Utility(Property):
     def __init__(self, name: str):
         super().__init__(name, 150, None, 75)
         self.both_owned = False
+
+    def effect(self, player):
+        factor = 10 if self.both_owned else 4
+        if self.owner is not None and self.owner is not player:
+            player.charge(factor * player.last_roll)
+            self.owner.balance += self.rent
 
 
 class ElectricCompany(Utility):

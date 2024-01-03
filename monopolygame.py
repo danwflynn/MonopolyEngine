@@ -1,4 +1,5 @@
 from typing import List
+import random
 
 from go import Go
 from player import Player
@@ -12,11 +13,9 @@ from spaceslinkedlist import CircularLinkedList
 
 class MonopolyGame:
     def __init__(self, players: List[Player]):
-        self.players = players
+        self.players = deque(players)
         self.board = CircularLinkedList()
-        self.turn = players[0]
-        self.last_roll = None
-        self.jackpot = 0
+        self.doubles_in_a_row = 0
 
         self.board.append(Go())
         self.board.append(Housing("Mediterranean Avenue", 60, 30, Color.BROWN, 50, (2, 10, 30, 90, 160, 250)))
@@ -61,3 +60,31 @@ class MonopolyGame:
 
         for player in self.players:
             player.location = self.board.head
+
+    def roll(self, die1=random.randint(1, 6), die2=random.randint(1, 6)):
+        self.players[0].last_roll = die1 + die2
+        if die1 == die2:
+            self.doubles_in_a_row += 1
+        else:
+            self.doubles_in_a_row = 0
+        if self.doubles_in_a_row == 3:
+            self.doubles_in_a_row = 0
+            self.players[0].go_to_jail()
+            return
+
+        for i in range(die1 + die2):
+            self.players[0].location = self.players[0].location.next
+            if self.players[0].location.space is Go:
+                self.players[0].balance += 200
+
+        self.players[0].land()
+
+    def end_turn(self):
+        if self.doubles_in_a_row == 0:
+            self.players.rotate(-1)
+
+    def add_to_jackpot(self, amount: int):
+        temp = self.board.head
+        while temp is not FreeParking:
+            temp = temp.next
+        temp.space.jackpot += amount
