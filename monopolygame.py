@@ -16,15 +16,16 @@ class MonopolyGame:
         self.players = deque(players)
         self.board = CircularLinkedList()
         self.doubles_in_a_row = 0
+        self.roll_available = True
 
         self.board.append(Go())
         self.board.append(Housing("Mediterranean Avenue", 60, 30, Color.BROWN, 50, (2, 10, 30, 90, 160, 250)))
-        self.board.append(CommunityChest())
+        self.board.append(CommunityChest(self))
         self.board.append(Housing("Baltic Avenue", 60, 30, Color.BROWN, 50, (4, 20, 60, 180, 320, 450)))
-        self.board.append(Tax(TaxType.INCOME_TAX))
+        self.board.append(IncomeTax(self))
         self.board.append(Railroad("Reading Railroad"))
         self.board.append(Housing("Oriental Avenue", 100, 50, Color.LIGHT_BLUE, 50, (6, 30, 90, 270, 400, 550)))
-        self.board.append(Chance())
+        self.board.append(Chance(self))
         self.board.append(Housing("Vermont Avenue", 100, 50, Color.LIGHT_BLUE, 50, (6, 30, 90, 270, 400, 550)))
         self.board.append(Housing("Connecticut Avenue", 120, 60, Color.LIGHT_BLUE, 50, (8, 40, 100, 300, 450, 600)))
         self.board.append(Jail())
@@ -34,12 +35,12 @@ class MonopolyGame:
         self.board.append(Housing("Virginia Avenue", 160, 80, Color.MAGENTA, 100, (12, 60, 180, 500, 700, 900)))
         self.board.append(Railroad("Pennsylvania Railroad"))
         self.board.append(Housing("St. James Place", 180, 90, Color.ORANGE, 100, (14, 70, 200, 550, 750, 950)))
-        self.board.append(CommunityChest())
+        self.board.append(CommunityChest(self))
         self.board.append(Housing("Tennessee Avenue", 180, 90, Color.ORANGE, 100, (14, 70, 200, 550, 750, 950)))
         self.board.append(Housing("New York Avenue", 200, 100, Color.ORANGE, 100, (16, 80, 220, 600, 800, 1000)))
         self.board.append(FreeParking())
         self.board.append(Housing("Kentucky Avenue", 220, 110, Color.RED, 150, (18, 90, 250, 700, 875, 1050)))
-        self.board.append(Chance())
+        self.board.append(Chance(self))
         self.board.append(Housing("Indiana Avenue", 220, 110, Color.RED, 150, (18, 90, 250, 700, 875, 1050)))
         self.board.append(Housing("Illinois Avenue", 240, 120, Color.RED, 150, (20, 100, 300, 750, 925, 1100)))
         self.board.append(Railroad("B&O Railroad"))
@@ -50,18 +51,23 @@ class MonopolyGame:
         self.board.append(GoToJail())
         self.board.append(Housing("Pacific Avenue", 300, 150, Color.GREEN, 200, (26, 130, 390, 900, 1100, 1275)))
         self.board.append(Housing("North Carolina Avenue", 300, 150, Color.GREEN, 200, (26, 130, 390, 900, 1100, 1275)))
-        self.board.append(CommunityChest())
+        self.board.append(CommunityChest(self))
         self.board.append(Housing("Pennsylvania Avenue", 320, 160, Color.GREEN, 200, (28, 150, 450, 1000, 1200, 1400)))
         self.board.append(Railroad("Short Line"))
-        self.board.append(Chance())
+        self.board.append(Chance(self))
         self.board.append(Housing("Park Place", 350, 175, Color.DARK_BLUE, 200, (35, 175, 500, 1100, 1300, 1500)))
-        self.board.append(Tax(TaxType.INCOME_TAX))
+        self.board.append(LuxuryTax(self))
         self.board.append(Housing("Boardwalk", 400, 200, Color.DARK_BLUE, 200, (50, 200, 600, 1400, 1700, 2000)))
 
         for player in self.players:
             player.location = self.board.head
 
     def roll(self, die1=random.randint(1, 6), die2=random.randint(1, 6)):
+        if not self.roll_available:
+            raise Exception("Already rolled for this turn")
+        if die1 < 1 or die1 > 6 or die2 < 1 or die2 > 6:
+            raise ValueError("Invalid dice roll")
+        self.roll_available = False
         self.players[0].last_roll = die1 + die2
         if die1 == die2:
             self.doubles_in_a_row += 1
@@ -74,7 +80,7 @@ class MonopolyGame:
 
         for i in range(die1 + die2):
             self.players[0].location = self.players[0].location.next
-            if self.players[0].location.space is Go:
+            if isinstance(self.players[0].location.space, Go):
                 self.players[0].balance += 200
 
         self.players[0].land()
@@ -82,9 +88,10 @@ class MonopolyGame:
     def end_turn(self):
         if self.doubles_in_a_row == 0:
             self.players.rotate(-1)
+        self.roll_available = True
 
     def add_to_jackpot(self, amount: int):
         temp = self.board.head
-        while temp is not FreeParking:
+        while not isinstance(temp, FreeParking):
             temp = temp.next
         temp.space.jackpot += amount

@@ -3,16 +3,17 @@ from collections import deque
 
 
 class DeedCard(Space):
-    def __init__(self, name: str):
+    def __init__(self, name: str, game):
         super().__init__(name)
         self.cards = deque()
+        self.game = game
 
 
 class Chance(DeedCard):
-    def __init__(self):
-        super().__init__("Chance")
+    def __init__(self, game):
+        super().__init__("Chance", game)
 
 
 class CommunityChest(DeedCard):
-    def __init__(self):
-        super().__init__("Community Chest")
+    def __init__(self, game):
+        super().__init__("Community Chest", game)
