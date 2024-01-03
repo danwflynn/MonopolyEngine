@@ -62,11 +62,20 @@ class MonopolyGame:
         for player in self.players:
             player.location = self.board.head
 
+    def __move(self, n: int):
+        for i in range(n):
+            self.players[0].location = self.players[0].location.next
+            if isinstance(self.players[0].location.space, Go):
+                self.players[0].balance += 200
+        self.players[0].land()
+
     def roll(self, die1=random.randint(1, 6), die2=random.randint(1, 6)):
         if not self.roll_available:
             raise Exception("Already rolled for this turn")
         if die1 < 1 or die1 > 6 or die2 < 1 or die2 > 6:
             raise ValueError("Invalid dice roll")
+        if self.players[0].in_jail:
+            raise Exception("Can't use roll function while in jail. Use jail_roll, goojfc or bail instead.")
         self.roll_available = False
         self.players[0].last_roll = die1 + die2
         if die1 == die2:
@@ -77,13 +86,7 @@ class MonopolyGame:
             self.doubles_in_a_row = 0
             self.players[0].go_to_jail()
             return
-
-        for i in range(die1 + die2):
-            self.players[0].location = self.players[0].location.next
-            if isinstance(self.players[0].location.space, Go):
-                self.players[0].balance += 200
-
-        self.players[0].land()
+        self.__move(die1 + die2)
 
     def end_turn(self):
         if self.doubles_in_a_row == 0:
@@ -95,3 +98,34 @@ class MonopolyGame:
         while not isinstance(temp, FreeParking):
             temp = temp.next
         temp.space.jackpot += amount
+
+    def bail(self):
+        if not self.players[0].in_jail:
+            raise Exception("Can't bail someone out who isn't in jail")
+        self.players[0].charge(50)
+        self.players[0].in_jail = False
+        self.players[0].jail_turns_left = 0
+
+    def jail_roll(self, die1=random.randint(1, 6), die2=random.randint(1, 6)):
+        if not self.roll_available:
+            raise Exception("Already rolled for this turn")
+        if die1 < 1 or die1 > 6 or die2 < 1 or die2 > 6:
+            raise ValueError("Invalid dice roll")
+        if not self.players[0].in_jail:
+            raise Exception("Can't use jail_roll when not in jail")
+        self.roll_available = False
+        if die1 == die2:
+            self.players[0].in_jail = False
+            self.players[0].jail_turns_left = 0
+            self.__move(die1 + die2)
+        elif self.players[0].jail_turns_left > 0:
+            self.players[0].jail_turns_left -= 1
+        else:
+            self.bail()
+            self.__move(die1 + die2)
+
+    def __str__(self):
+        result = ""
+        for p in self.players:
+            result += p.name + " : " + p.location.space.name + "\n"
+        return result

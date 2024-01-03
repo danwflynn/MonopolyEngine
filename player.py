@@ -52,10 +52,10 @@ class Player:
             pass  # you lose
 
     def go_to_jail(self):
-        while self.location.space is not Jail:
+        while not isinstance(self.location.space, Jail):
             self.location = self.location.next
         self.in_jail = True
-        self.jail_turns_left = 3  # might be wrong
+        self.jail_turns_left = 2
 
     def purchase_location(self):
         if self.location.space is not Property:
