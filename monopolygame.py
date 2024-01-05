@@ -78,9 +78,9 @@ class MonopolyGame:
             self.property_manager.railroad_owners[player] = []
             self.property_manager.utility_owners[player] = []
 
-        self.free_parking = self.board.head
-        while not isinstance(self.free_parking, FreeParking):
-            self.free_parking = self.free_parking.next
+        self.free_parking_node = self.board.head
+        while not isinstance(self.free_parking_node.space, FreeParking):
+            self.free_parking_node = self.free_parking_node.next
 
     def __move_acting_player(self, n: int):
         for i in range(n):
@@ -118,7 +118,7 @@ class MonopolyGame:
     def bail(self):
         if not self.players[0].in_jail:
             raise Exception("Can't bail someone out who isn't in jail")
-        self.players[0].charge(50, self.free_parking.space)
+        self.players[0].charge(50, self.free_parking_node.space)
         self.players[0].in_jail = False
         self.players[0].jail_turns_left = 0
 
