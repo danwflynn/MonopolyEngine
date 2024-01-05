@@ -9,3 +9,4 @@ monopoly = MonopolyGame([p1, p2, p3])
 
 p = Property("a", 1, 2, 3)
 print(p.name)
+

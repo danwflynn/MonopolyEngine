@@ -13,18 +13,6 @@ class Piece(Enum):
     RACECAR = "Racecar"
 
 
-monopoly_counts = {
-    Color.BROWN: 2,
-    Color.LIGHT_BLUE: 3,
-    Color.MAGENTA: 3,
-    Color.ORANGE: 3,
-    Color.RED: 3,
-    Color.YELLOW: 3,
-    Color.GREEN: 3,
-    Color.DARK_BLUE: 2,
-}
-
-
 class Player:
     def __init__(self, piece: Piece, name: str):
         self.name = name
@@ -33,23 +21,46 @@ class Player:
         self.location = None
         self.properties = []
         self.debt = 0
+        self.debt_to = None
         self.in_jail = False
         self.jail_turns_left = 0
         self.last_roll = None
+        self.property_manager = None
 
-    def calculate_total_assets(self):
-        return self.balance
+    def calculate_net_worth(self):
+        return self.balance + sum([prop.get_value() for prop in self.properties])
 
     def land(self):
         self.location.space.effect(self)
 
-    def charge(self, amount: int):
+    def __any_un_mortgaged_properties(self):
+        for prop in self.properties:
+            if not prop.mortgaged:
+                return True
+        return False
+
+    def charge(self, amount: int, recipient):
         if amount <= self.balance:
             self.balance -= amount
-        elif amount <= self.calculate_total_assets():
-            pass  # need to sell
+            recipient.balance += amount
+        elif self.__any_un_mortgaged_properties():
+            amount_paid = self.balance
+            recipient.balance += amount_paid
+            self.balance = 0
+            self.debt = amount - amount_paid
+            self.debt_to = recipient
         else:
             pass  # you lose
+
+    def pay_debt(self):
+        if self.debt_to is None:
+            raise Exception("Can't pay debt when not in debt")
+        if self.balance < self.debt:
+            raise Exception("Not enough to pay debt")
+        self.balance -= self.debt
+        self.debt_to.balance += self.debt
+        self.debt = 0
+        self.debt_to = None
 
     def go_to_jail(self):
         while not isinstance(self.location.space, Jail):
@@ -66,62 +77,17 @@ class Player:
             raise Exception("Not enough balance to buy property")
 
         self.balance -= self.location.space.price
-        self.location.space.owner = self
-        self.properties.append(self.location.space)
+        self.property_manager.claim(self.location.space, self)
 
-        if isinstance(self.location.space, Housing):
-            color = self.location.space.color
-            housing_list = [ele for ele in self.properties if isinstance(ele, Housing)]
-            housing_group = [prop for prop in housing_list if prop.color == color]
-            if len(housing_group) == monopoly_counts[color]:
-                for prop in housing_group:
-                    prop.monopolized = True
-                    prop.rents[0] *= 2
-        elif isinstance(self.location.space, Railroad):
-            railroad_list = [ele for ele in self.properties if isinstance(ele, Railroad)]
-            match len(railroad_list):
-                case 2:
-                    for railroad in railroad_list:
-                        railroad.rent = 50
-                case 3:
-                    for railroad in railroad_list:
-                        railroad.rent = 100
-                case 4:
-                    for railroad in railroad_list:
-                        railroad.rent = 200
-        elif isinstance(self.location.space, Utility):
-            utility_list = [ele for ele in self.properties if isinstance(ele, Utility)]
-            if len(utility_list) == 2:
-                for prop in utility_list:
-                    prop.both_owned = True
+    def __search_for_property(self, property_name: str):
+        for prop in self.properties:
+            if prop.name == property_name:
+                return prop
+        raise Exception("No property by that name")
 
     def mortgage(self, property_name: str):
-        if property_name not in [prop.name for prop in self.properties]:
-            raise Exception("No property by that name")
-        p = None
-        for prop in self.properties:
-            if prop.name == property_name:
-                p = prop
-                break
-        if p.mortgaged:
-            raise Exception("Already mortgaged")
-        if isinstance(p, Housing) and (p.houses != 0 or p.hotels != 0):
-            raise Exception("Must sell houses before mortgaging")
-        p.mortgaged = True
-        self.balance += p.mortgage
+        self.__search_for_property(property_name).mortgage()
 
     def un_mortgage(self, property_name: str):
-        if property_name not in [prop.name for prop in self.properties]:
-            raise Exception("No property by that name")
-        p = None
-        for prop in self.properties:
-            if prop.name == property_name:
-                p = prop
-                break
-        if not p.mortgaged:
-            raise Exception("Already un-mortgaged")
-        if int(1.1 * p.mortgage) > self.balance:
-            raise Exception("Can't afford to un-mortgage")
-        p.mortgaged = True
-        self.balance -= int(1.1 * p.mortgage)
+        self.__search_for_property(property_name).un_mortgage()
 

@@ -100,6 +100,15 @@ class MonopolyTestCases(unittest.TestCase):
         self.monopoly.end_turn()
         self.assertTrue(isinstance(self.p1.location.space, Jail))
 
+    def test_escape_jail1(self):
+        self.p1.go_to_jail()
+        self.monopoly.jail_roll(5, 5)
+        self.monopoly.end_turn()
+        self.assertTrue(isinstance(self.p1.location.space, FreeParking))
+        self.assertEqual(self.monopoly.players[0], self.p2)
+        self.assertEqual(self.monopoly.players[1], self.p3)
+        self.assertEqual(self.monopoly.players[2], self.p1)
+
 
 if __name__ == '__main__':
     unittest.main()

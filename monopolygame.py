@@ -9,6 +9,7 @@ from tax import *
 from jail import *
 from freeparking import FreeParking
 from spaceslinkedlist import CircularLinkedList
+from propertymanager import PropertyManager
 
 
 class MonopolyGame:
@@ -17,6 +18,7 @@ class MonopolyGame:
         self.board = CircularLinkedList()
         self.doubles_in_a_row = 0
         self.roll_available = True
+        self.property_manager = PropertyManager()
 
         self.board.append(Go())
         self.board.append(Housing("Mediterranean Avenue", 60, 30, Color.BROWN, 50, (2, 10, 30, 90, 160, 250)))
@@ -62,7 +64,21 @@ class MonopolyGame:
         for player in self.players:
             player.location = self.board.head
 
-    def __move(self, n: int):
+        temp = self.board.head
+        for i in range(39):
+            temp = temp.next
+            if isinstance(temp.space, Housing):
+                if temp.space.color in self.property_manager.monopoly_color_groups:
+                    self.property_manager.monopoly_color_groups[temp.space.color].append(temp.space)
+                else:
+                    self.property_manager.monopoly_color_groups[temp.space.color] = [temp.space]
+
+        for player in self.players:
+            player.property_manager = self.property_manager
+            self.property_manager.railroad_owners[player] = []
+            self.property_manager.utility_owners[player] = []
+
+    def __move_acting_player(self, n: int):
         for i in range(n):
             self.players[0].location = self.players[0].location.next
             if isinstance(self.players[0].location.space, Go):
@@ -86,23 +102,30 @@ class MonopolyGame:
             self.doubles_in_a_row = 0
             self.players[0].go_to_jail()
             return
-        self.__move(die1 + die2)
+        self.__move_acting_player(die1 + die2)
 
     def end_turn(self):
+        if self.players[0].debt != 0:
+            raise Exception("Can't end turn when the acting player is in debt")
         if self.doubles_in_a_row == 0:
             self.players.rotate(-1)
         self.roll_available = True
 
+    """
     def add_to_jackpot(self, amount: int):
         temp = self.board.head
         while not isinstance(temp, FreeParking):
             temp = temp.next
         temp.space.jackpot += amount
+    """
 
     def bail(self):
         if not self.players[0].in_jail:
             raise Exception("Can't bail someone out who isn't in jail")
-        self.players[0].charge(50)
+        fp = self.board.head
+        while not isinstance(fp, FreeParking):
+            fp = fp.next
+        self.players[0].charge(50, fp.space)
         self.players[0].in_jail = False
         self.players[0].jail_turns_left = 0
 
@@ -117,12 +140,12 @@ class MonopolyGame:
         if die1 == die2:
             self.players[0].in_jail = False
             self.players[0].jail_turns_left = 0
-            self.__move(die1 + die2)
+            self.__move_acting_player(die1 + die2)
         elif self.players[0].jail_turns_left > 0:
             self.players[0].jail_turns_left -= 1
         else:
             self.bail()
-            self.__move(die1 + die2)
+            self.__move_acting_player(die1 + die2)
 
     def __str__(self):
         result = ""
