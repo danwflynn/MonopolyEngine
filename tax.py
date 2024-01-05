@@ -13,8 +13,7 @@ class IncomeTax(Tax):
 
     def effect(self, player):
         amount = min(200, 0.1 * player.calculate_total_assets())
-        player.charge(amount)
-        self.game.add_to_jackpot(amount)
+        player.charge(amount, self.game.free_parking.space)
 
 
 class LuxuryTax(Tax):
@@ -22,5 +21,4 @@ class LuxuryTax(Tax):
         super().__init__("Luxury Tax", game)
 
     def effect(self, player):
-        player.charge(75)
-        self.game.add_to_jackpot(75)
+        player.charge(75, self.game.free_parking.space)
