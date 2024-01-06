@@ -4,7 +4,7 @@ import random
 from go import Go
 from player import Player
 from properties import *
-from deedcard import *
+from deed import *
 from tax import *
 from jail import *
 from freeparking import FreeParking
@@ -110,6 +110,8 @@ class MonopolyGame:
         self.__move_acting_player(die1 + die2)
 
     def end_turn(self):
+        if self.roll_available:
+            raise Exception("Can't end turn before rolling")
         if self.active_players[0].bankrupt:
             self.bankrupt_players.append(self.active_players.popleft())
         elif self.active_players[0].debt != 0:

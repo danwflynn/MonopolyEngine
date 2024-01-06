@@ -136,4 +136,3 @@ class PropertyManager:
         elif isinstance(prop, Utility):
             self.utility_owners[prop.owner].remove(prop)
         prop.reset()
-
