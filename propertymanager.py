@@ -128,4 +128,12 @@ class PropertyManager:
         if prop.houses == 0:
             prop.rent = prop.rents[0] * 2
 
-    # TODO: reset function
+    def reset(self, prop: Property):
+        if prop.owner is None:
+            raise Exception(prop.name + " can't be reset because it's owner is set to None")
+        if isinstance(prop, Railroad):
+            self.railroad_owners[prop.owner].remove(prop)
+        elif isinstance(prop, Utility):
+            self.utility_owners[prop.owner].remove(prop)
+        prop.reset()
+

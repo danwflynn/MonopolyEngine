@@ -50,6 +50,10 @@ class Property(Space):
         self.mortgaged = False
         self.owner.balance -= int(1.1 * self.mortgage)
 
+    def reset(self):
+        self.owner = None
+        self.mortgaged = False
+
 
 class Housing(Property):
     def __init__(self, name: str, price: int, mortgage: int, color: Color, building_cost: int,
@@ -66,13 +70,23 @@ class Housing(Property):
 
     def mortgage(self):
         if self.houses + self.hotels != 0:
-            raise Exception("Can't mortgage property with buildings on it")
+            raise Exception(f'Can\'t mortgage {self.name} with buildings on it')
         Property.mortgage(self)
+
+    def reset(self):
+        if self.houses + self.hotels > 0:
+            raise Exception(f'Can\'t reset {self.name} when there are buildings present')
+        super().reset()
+        self.rent = self.rents[0]
 
 
 class Railroad(Property):
     def __init__(self, name: str):
         super().__init__(name, 200, 25, 100)
+
+    def reset(self):
+        super().reset()
+        self.rent = 25
 
 
 class Utility(Property):
@@ -84,6 +98,10 @@ class Utility(Property):
         factor = 10 if self.both_owned else 4
         if self.owner is not None and self.owner is not player:
             player.charge(factor * player.last_roll, self.owner)
+
+    def reset(self):
+        super().reset()
+        self.both_owned = False
 
 
 class ElectricCompany(Utility):
