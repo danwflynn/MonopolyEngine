@@ -279,6 +279,13 @@ class MonopolyTestCases(unittest.TestCase):
         self.assertEqual(1500, self.p1.calculate_net_worth())
         self.p1.player_mortgage("Baltic Avenue")
         self.assertTrue(self.p1.location.space.mortgaged)
+        self.assertEqual(1470, self.p1.balance)
+        self.assertEqual(1500, self.p1.calculate_net_worth())
+        self.monopoly.end_turn()
+        self.monopoly.roll(1, 2)
+        self.monopoly.end_turn()
+        self.assertEqual(1470, self.p1.balance)
+        self.assertEqual(1500, self.p2.balance)
 
 
 if __name__ == '__main__':

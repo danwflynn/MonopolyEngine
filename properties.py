@@ -23,7 +23,7 @@ class Property(Space):
         self.mortgaged = False
 
     def effect(self, player):
-        if self.owner is not None and self.owner is not player:
+        if self.owner is not None and self.owner is not player and not self.mortgaged:
             player.charge(self.rent, self.owner)
 
     def get_value(self):
