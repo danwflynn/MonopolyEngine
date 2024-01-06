@@ -27,6 +27,7 @@ class Player:
         self.last_roll = None
         self.property_manager = None
         self.bankrupt = False
+        self.jail_free_cards = 0
 
     def calculate_net_worth(self):
         return self.balance + sum([prop.get_value() for prop in self.properties])
@@ -39,6 +40,9 @@ class Player:
             if not prop.mortgaged:
                 return True
         return False
+
+    def collect(self, amount: int):
+        self.balance += amount
 
     def charge(self, amount: int, recipient):
         if amount <= self.balance:
