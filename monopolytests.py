@@ -233,6 +233,12 @@ class MonopolyTestCases(unittest.TestCase):
         self.assertEqual(1350, self.p1.balance)
         self.assertEqual(150, self.monopoly.free_parking_node.space.balance)
 
+    def test_tax_the_rich(self):
+        self.p1.balance = 5000
+        self.monopoly.roll(3, 1)
+        self.assertEqual(4800, self.p1.balance)
+        self.assertEqual(200, self.monopoly.free_parking_node.space.balance)
+
 
 if __name__ == '__main__':
     unittest.main()
