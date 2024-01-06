@@ -296,7 +296,7 @@ class MonopolyTestCases(unittest.TestCase):
         self.assertEqual(1441, self.p1.balance)
         self.assertEqual(1496, self.p3.balance)
 
-    def test_get_brown_monopoly_and_build(self):
+    def test_get_brown_monopoly_and_use(self):
         self.monopoly.roll(1, 2)
         self.p1.purchase_location()
         self.monopoly.end_turn()
@@ -368,6 +368,12 @@ class MonopolyTestCases(unittest.TestCase):
         self.assertEqual(1355, self.p1.balance)
         self.p1.sell_hotel("Mediterranean Avenue")
         self.assertEqual(1380, self.p1.balance)
+        self.assertEqual(160, self.p2.location.space.rent)
+        for i in range(4):
+            self.p1.sell_houses("Mediterranean Avenue", 1)
+            self.p1.sell_houses("Baltic Avenue", 1)
+            self.assertEqual(1380 + (50 * (i + 1)), self.p1.balance)
+        self.assertEqual(4, self.p2.location.space.rent)
 
 
 if __name__ == '__main__':
