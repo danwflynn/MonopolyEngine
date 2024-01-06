@@ -26,6 +26,7 @@ class Player:
         self.jail_turns_left = 0
         self.last_roll = None
         self.property_manager = None
+        self.bankrupt = False
 
     def calculate_net_worth(self):
         return self.balance + sum([prop.get_value() for prop in self.properties])
@@ -50,7 +51,20 @@ class Player:
             self.debt = amount - amount_paid
             self.debt_to = recipient
         else:
-            pass  # you lose
+            recipient.balance += self.balance
+            self.balance = 0
+            for prop in self.properties:
+                self.property_manager.reset(prop)
+                self.properties.remove(prop)
+                self.bankrupt = True
+
+    def liquidate_everything(self):
+        for prop in [x for x in self.properties if isinstance(x, Housing)]:
+            if prop.hotels:
+                self.property_manager.sell_hotel(prop)
+            self.property_manager.sell_houses(prop, prop.houses)
+        for prop in [x for x in self.properties if not x.mortgaged]:
+            prop.mortgage()
 
     def pay_debt(self):
         if self.debt_to is None:
@@ -91,3 +105,14 @@ class Player:
     def un_mortgage(self, property_name: str):
         self.__search_for_property(property_name).un_mortgage()
 
+    def build_houses(self, property_name: str, n: int):
+        self.property_manager.build_houses(self.__search_for_property(property_name), n)
+
+    def build_hotel(self, property_name: str):
+        self.property_manager.build_hotel(self.__search_for_property(property_name))
+
+    def sell_houses(self, property_name: str, n: int):
+        self.property_manager.sell_houses(self.__search_for_property(property_name), n)
+
+    def sell_hotel(self, property_name: str):
+        self.property_manager.sell_hotel(self.__search_for_property(property_name))

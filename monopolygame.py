@@ -14,7 +14,8 @@ from propertymanager import PropertyManager
 
 class MonopolyGame:
     def __init__(self, players: List[Player]):
-        self.players = deque(players)
+        self.active_players = deque(players)
+        self.bankrupt_players = []
         self.board = CircularLinkedList()
         self.doubles_in_a_row = 0
         self.roll_available = True
@@ -61,7 +62,7 @@ class MonopolyGame:
         self.board.append(LuxuryTax(self))
         self.board.append(Housing("Boardwalk", 400, 200, Color.DARK_BLUE, 200, (50, 200, 600, 1400, 1700, 2000)))
 
-        for player in self.players:
+        for player in self.active_players:
             player.location = self.board.head
 
         temp = self.board.head
@@ -73,7 +74,7 @@ class MonopolyGame:
                 else:
                     self.property_manager.monopoly_color_groups[temp.space.color] = [temp.space]
 
-        for player in self.players:
+        for player in self.active_players:
             player.property_manager = self.property_manager
             self.property_manager.railroad_owners[player] = []
             self.property_manager.utility_owners[player] = []
@@ -84,64 +85,66 @@ class MonopolyGame:
 
     def __move_acting_player(self, n: int):
         for i in range(n):
-            self.players[0].location = self.players[0].location.next
-            if isinstance(self.players[0].location.space, Go):
-                self.players[0].balance += 200
-        self.players[0].land()
+            self.active_players[0].location = self.active_players[0].location.next
+            if isinstance(self.active_players[0].location.space, Go):
+                self.active_players[0].balance += 200
+        self.active_players[0].land()
 
     def roll(self, die1=random.randint(1, 6), die2=random.randint(1, 6)):
         if not self.roll_available:
             raise Exception("Already rolled for this turn")
         if die1 < 1 or die1 > 6 or die2 < 1 or die2 > 6:
             raise ValueError("Invalid dice roll")
-        if self.players[0].in_jail:
+        if self.active_players[0].in_jail:
             raise Exception("Can't use roll function while in jail. Use jail_roll, goojfc or bail instead.")
         self.roll_available = False
-        self.players[0].last_roll = die1 + die2
+        self.active_players[0].last_roll = die1 + die2
         if die1 == die2:
             self.doubles_in_a_row += 1
         else:
             self.doubles_in_a_row = 0
         if self.doubles_in_a_row == 3:
             self.doubles_in_a_row = 0
-            self.players[0].go_to_jail()
+            self.active_players[0].go_to_jail()
             return
         self.__move_acting_player(die1 + die2)
 
     def end_turn(self):
-        if self.players[0].debt != 0:
+        if self.active_players[0].bankrupt:
+            self.bankrupt_players.append(self.active_players.popleft())
+        elif self.active_players[0].debt != 0:
             raise Exception("Can't end turn when the acting player is in debt")
-        if self.doubles_in_a_row == 0:
-            self.players.rotate(-1)
+        elif self.doubles_in_a_row == 0:
+            self.active_players.rotate(-1)
         self.roll_available = True
 
     def bail(self):
-        if not self.players[0].in_jail:
+        if not self.active_players[0].in_jail:
             raise Exception("Can't bail someone out who isn't in jail")
-        self.players[0].charge(50, self.free_parking_node.space)
-        self.players[0].in_jail = False
-        self.players[0].jail_turns_left = 0
+        self.active_players[0].charge(50, self.free_parking_node.space)
+        self.active_players[0].in_jail = False
+        self.active_players[0].jail_turns_left = 0
 
     def jail_roll(self, die1=random.randint(1, 6), die2=random.randint(1, 6)):
         if not self.roll_available:
             raise Exception("Already rolled for this turn")
         if die1 < 1 or die1 > 6 or die2 < 1 or die2 > 6:
             raise ValueError("Invalid dice roll")
-        if not self.players[0].in_jail:
+        if not self.active_players[0].in_jail:
             raise Exception("Can't use jail_roll when not in jail")
         self.roll_available = False
         if die1 == die2:
-            self.players[0].in_jail = False
-            self.players[0].jail_turns_left = 0
+            self.active_players[0].in_jail = False
+            self.active_players[0].jail_turns_left = 0
             self.__move_acting_player(die1 + die2)
-        elif self.players[0].jail_turns_left > 0:
-            self.players[0].jail_turns_left -= 1
+        elif self.active_players[0].jail_turns_left > 0:
+            self.active_players[0].jail_turns_left -= 1
         else:
             self.bail()
             self.__move_acting_player(die1 + die2)
 
     def __str__(self):
         result = ""
-        for p in self.players:
+        for p in self.active_players:
             result += p.name + " : " + p.location.space.name + "\n"
         return result

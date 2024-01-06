@@ -127,3 +127,5 @@ class PropertyManager:
         prop.rent = prop.rents[prop.houses]
         if prop.houses == 0:
             prop.rent = prop.rents[0] * 2
+
+    # TODO: reset function
