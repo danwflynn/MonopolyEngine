@@ -4,8 +4,9 @@ from player import Player, Piece
 from go import Go
 from jail import Jail
 from freeparking import FreeParking
-from properties import *
-from tax import *
+from properties import Housing
+from properties import Utility
+from tax import LuxuryTax
 
 
 class MonopolyTestCases(unittest.TestCase):
@@ -294,6 +295,79 @@ class MonopolyTestCases(unittest.TestCase):
         self.monopoly.end_turn()
         self.assertEqual(1441, self.p1.balance)
         self.assertEqual(1496, self.p3.balance)
+
+    def test_get_brown_monopoly_and_build(self):
+        self.monopoly.roll(1, 2)
+        self.p1.purchase_location()
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 4)
+            self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 4)
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 5)
+            self.monopoly.end_turn()
+        self.monopoly.roll(1, 3)
+        self.p1.purchase_location()
+        self.assertEqual(1580, self.p1.balance)
+        self.assertEqual(2, len(self.p1.properties))
+        for prop in self.p1.properties:
+            if prop.name == "Mediterranean Avenue":
+                self.assertEqual(4, prop.rent)
+            elif prop.name == "Baltic Avenue":
+                self.assertEqual(8, prop.rent)
+
+        self.p1.build_houses("Mediterranean Avenue", 1)
+        for prop in self.p1.properties:
+            if prop.name == "Mediterranean Avenue":
+                self.assertEqual(1, prop.houses)
+            elif prop.name == "Baltic Avenue":
+                self.assertEqual(0, prop.houses)
+        self.p1.build_houses("Baltic Avenue", 2)
+        self.p1.build_houses("Mediterranean Avenue", 2)
+        self.p1.build_houses("Baltic Avenue", 2)
+        self.p1.build_houses("Mediterranean Avenue", 1)
+        for prop in self.p1.properties:
+            if prop.name == "Mediterranean Avenue":
+                self.assertEqual(4, prop.houses)
+            elif prop.name == "Baltic Avenue":
+                self.assertEqual(4, prop.houses)
+
+        self.assertEqual(24, self.p1.property_manager.houses)
+        for prop in self.p1.properties:
+            if prop.name == "Mediterranean Avenue":
+                self.assertEqual(160, prop.rent)
+            elif prop.name == "Baltic Avenue":
+                self.assertEqual(320, prop.rent)
+
+        self.p1.build_hotel("Mediterranean Avenue")
+        self.p1.build_hotel("Baltic Avenue")
+
+        self.assertEqual(32, self.p1.property_manager.houses)
+        self.assertEqual(10, self.p1.property_manager.hotels)
+        for prop in self.p1.properties:
+            if prop.name == "Mediterranean Avenue":
+                self.assertEqual(250, prop.rent)
+            elif prop.name == "Baltic Avenue":
+                self.assertEqual(450, prop.rent)
+
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(5, 5)
+            self.monopoly.end_turn()
+
+        self.assertEqual(1450, self.p2.balance)
+        self.assertEqual(1330, self.p1.balance)
+
+        self.p1.sell_hotel("Baltic Avenue")
+        self.assertEqual(1355, self.p1.balance)
+        self.p1.sell_hotel("Mediterranean Avenue")
+        self.assertEqual(1380, self.p1.balance)
 
 
 if __name__ == '__main__':

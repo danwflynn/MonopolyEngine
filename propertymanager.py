@@ -77,7 +77,7 @@ class PropertyManager:
         proposed_house_amounts = []
         for p in self.monopoly_color_groups[prop.color]:
             if p is prop:
-                proposed_house_amounts.append(p.houses + 1)
+                proposed_house_amounts.append(p.houses + n)
             else:
                 proposed_house_amounts.append(p.houses)
         if max(proposed_house_amounts) - min(proposed_house_amounts) > 1:
@@ -92,8 +92,9 @@ class PropertyManager:
         if len(set([x.owner for x in self.monopoly_color_groups[prop.color]])) != 1 or prop.houses != 4 \
                 or prop.hotels != 0:
             raise Exception(prop.name + " not eligible for hotel")
-        if prop.houses != 4:
-            raise Exception(f'{prop.name} has {prop.houses} houses which isn\'t the required 4')
+        for p in self.monopoly_color_groups[prop.color]:
+            if p.houses != 4 and p.hotels != 1:
+                raise Exception(f'{p.name} has {p.houses} houses which isn\'t the required 4')
         if prop.owner.balance < prop.building_cost:
             raise Exception("Can't afford hotel")
         if self.hotels < 1:
@@ -108,6 +109,17 @@ class PropertyManager:
     def sell_houses(self, prop: Housing, n: int):
         if prop.houses < n:
             raise Exception(f'{prop.name} can\'t sell {n} houses')
+        for p in self.monopoly_color_groups[prop.color]:
+            if p.hotels:
+                raise Exception(f'{p.name} has a hotel')
+        proposed_house_amounts = []
+        for p in self.monopoly_color_groups[prop.color]:
+            if p is prop:
+                proposed_house_amounts.append(p.houses - n)
+            else:
+                proposed_house_amounts.append(p.houses)
+        if max(proposed_house_amounts) - min(proposed_house_amounts) > 1:
+            raise Exception("Properties in a monopoly can only have a 1 building difference")
         prop.houses -= n
         prop.owner.balance += n * prop.building_cost // 2
         self.houses += n
@@ -124,7 +136,7 @@ class PropertyManager:
         houses_back = min(4, self.houses)
         self.houses -= houses_back
         prop.houses = houses_back
-        prop.owner.balance += houses_back * prop.building_cost // 2
+        prop.owner.balance += (4 - houses_back) * prop.building_cost // 2
         prop.rent = prop.rents[prop.houses]
         if prop.houses == 0:
             prop.rent = prop.rents[0] * 2
