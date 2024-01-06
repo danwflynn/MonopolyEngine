@@ -32,7 +32,7 @@ class Property(Space):
         else:
             return self.price / 2
 
-    def mortgage(self):
+    def prop_mortgage(self):
         if self.owner is None:
             raise Exception("Can't mortgage an unowned property")
         if self.mortgaged:
@@ -40,7 +40,7 @@ class Property(Space):
         self.mortgaged = True
         self.owner.balance += self.mortgage
 
-    def un_mortgage(self):
+    def prop_un_mortgage(self):
         if self.owner is None:
             raise Exception("Can't un-mortgage an unowned property")
         if not self.mortgaged:
@@ -68,10 +68,10 @@ class Housing(Property):
     def get_value(self):
         return super().get_value() + (self.houses * self.building_cost) + (5 * self.hotels * self.building_cost)
 
-    def mortgage(self):
+    def prop_mortgage(self):
         if self.houses + self.hotels != 0:
             raise Exception(f'Can\'t mortgage {self.name} with buildings on it')
-        Property.mortgage(self)
+        Property.prop_mortgage(self)
 
     def reset(self):
         if self.houses + self.hotels > 0:

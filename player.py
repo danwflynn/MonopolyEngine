@@ -99,11 +99,11 @@ class Player:
                 return prop
         raise Exception("No property by that name")
 
-    def mortgage(self, property_name: str):
-        self.__search_for_property(property_name).mortgage()
+    def player_mortgage(self, property_name: str):
+        self.__search_for_property(property_name).prop_mortgage()
 
-    def un_mortgage(self, property_name: str):
-        self.__search_for_property(property_name).un_mortgage()
+    def player_un_mortgage(self, property_name: str):
+        self.__search_for_property(property_name).prop_un_mortgage()
 
     def build_houses(self, property_name: str, n: int):
         self.property_manager.build_houses(self.__search_for_property(property_name), n)
