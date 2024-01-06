@@ -269,7 +269,7 @@ class MonopolyTestCases(unittest.TestCase):
         self.monopoly.end_turn()
         self.assertEqual(1700, self.p1.balance)
 
-    def test_buy_and_mortgage_baltic(self):
+    def test_use_baltic(self):
         self.monopoly.roll(1, 2)
         self.p1.purchase_location()
         self.assertEqual(1440, self.p1.balance)
@@ -286,6 +286,14 @@ class MonopolyTestCases(unittest.TestCase):
         self.monopoly.end_turn()
         self.assertEqual(1470, self.p1.balance)
         self.assertEqual(1500, self.p2.balance)
+        self.p1.player_un_mortgage("Baltic Avenue")
+        self.assertEqual(1437, self.p1.balance)
+        self.assertEqual(1497, self.p1.calculate_net_worth())
+        self.assertFalse(self.p1.location.space.mortgaged)
+        self.monopoly.roll(1, 2)
+        self.monopoly.end_turn()
+        self.assertEqual(1441, self.p1.balance)
+        self.assertEqual(1496, self.p3.balance)
 
 
 if __name__ == '__main__':
