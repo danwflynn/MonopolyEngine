@@ -83,8 +83,8 @@ class Player:
         self.jail_turns_left = 2
 
     def purchase_location(self):
-        if self.location.space is not Property:
-            raise Exception("Can't purchase a space that isn't property")
+        if not isinstance(self.location.space, Property):
+            raise Exception(f'Can\'t purchase {self.location.space.name} because it isn\'t property')
         if self.location.space.owner is not None:
             raise Exception("Can't purchase already owned property")
         if self.balance < self.location.space.price:

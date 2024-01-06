@@ -20,9 +20,10 @@ class PropertyManager:
         prop.owner = player
         player.properties.append(prop)
         if isinstance(prop, Housing):
-            if len([x.houses for x in self.monopoly_color_groups[prop.color]]) \
-                    + len([x.hotels for x in self.monopoly_color_groups[prop.color]]) != 0:
-                raise Exception("Cannot claim housing when there are buildings in its group")
+            buildings = sum([x.houses for x in self.monopoly_color_groups[prop.color]]) \
+                    + sum([x.hotels for x in self.monopoly_color_groups[prop.color]])
+            if buildings != 0:
+                raise Exception(f'Cannot claim {prop.name} when there are {n} (not 0) buildings in its group')
             if len(set([x.owner for x in self.monopoly_color_groups[prop.color]])) == 1:
                 for p in self.monopoly_color_groups[prop.color]:
                     if p.rent == p.rents[0]:

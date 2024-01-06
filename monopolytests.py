@@ -239,6 +239,42 @@ class MonopolyTestCases(unittest.TestCase):
         self.assertEqual(4800, self.p1.balance)
         self.assertEqual(200, self.monopoly.free_parking_node.space.balance)
 
+    def test_pass_go(self):
+        self.monopoly.roll(5, 5)
+        self.monopoly.end_turn()
+        self.monopoly.roll(5, 5)
+        self.monopoly.end_turn()
+        self.monopoly.roll(5, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(5, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(5, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 4)
+        self.monopoly.end_turn()
+        self.assertEqual(1700, self.p1.balance)
+
+    def test_land_on_go(self):
+        self.monopoly.roll(5, 5)
+        self.monopoly.end_turn()
+        self.monopoly.roll(5, 5)
+        self.monopoly.end_turn()
+        self.monopoly.roll(5, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(5, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(5, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 3)
+        self.monopoly.end_turn()
+        self.assertEqual(1700, self.p1.balance)
+
+    def test_buy_and_mortgage_baltic(self):
+        self.monopoly.roll(1, 2)
+        self.p1.purchase_location()
+        self.assertEqual(1440, self.p1.balance)
+        self.assertEqual(self.p1, self.p1.location.space.owner)
+
 
 if __name__ == '__main__':
     unittest.main()
