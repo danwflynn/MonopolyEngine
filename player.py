@@ -1,5 +1,7 @@
 from properties import *
 from jail import Jail
+from go import Go
+from deed import *
 
 
 class Piece(Enum):
@@ -27,7 +29,7 @@ class Player:
         self.last_roll = None
         self.property_manager = None
         self.bankrupt = False
-        self.jail_free_cards = 0
+        self.jail_free_cards = []
 
     def calculate_net_worth(self):
         return self.balance + sum([prop.get_value() for prop in self.properties])
@@ -52,7 +54,7 @@ class Player:
             amount_paid = self.balance
             recipient.balance += amount_paid
             self.balance = 0
-            self.debt = amount - amount_paid
+            self.debt += amount - amount_paid
             self.debt_to = recipient
         else:
             recipient.balance += self.balance
@@ -85,6 +87,44 @@ class Player:
             self.location = self.location.next
         self.in_jail = True
         self.jail_turns_left = 2
+
+    def advance_to(self, property_name: str):
+        while self.location.space.name != property_name:
+            self.location = self.location.next
+            if isinstance(self.location.space, Go):
+                self.balance += 200
+        self.land()
+
+    def add_jail_free_card(self, card: Card):
+        self.jail_free_cards.append(card)
+        if card.card_type is CardType.CHANCE:
+            Chance.cards.remove(card)
+        else:
+            CommunityChest.cards.remove(card)
+
+    def use_jail_free_card(self):
+        if self.jail_free_cards[0].card_type is CardType.CHANCE:
+            Chance.cards.append(self.jail_free_cards[0])
+        else:
+            CommunityChest.cards.append(self.jail_free_cards[0])
+        self.jail_free_cards.pop()
+
+    def go_back(self, n: int):
+        for i in range(n):
+            self.location = self.location.prev
+        self.land()
+
+    def go_nearest_railroad(self):
+        pass
+
+    def go_nearest_utility(self):
+        pass
+
+    def repair_costs(self, houses: int, hotels: int):
+        pass
+
+    def pay_each(self, amount: int, players):
+        pass
 
     def purchase_location(self):
         if not isinstance(self.location.space, Property):
