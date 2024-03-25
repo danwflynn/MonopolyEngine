@@ -95,7 +95,7 @@ class Player:
                 self.balance += 200
         self.land()
 
-    def add_jail_free_card(self, card: Card):
+    def add_jail_free_card(self, card: GetOutOfJailFreeCard):
         self.jail_free_cards.append(card)
         if card.card_type is CardType.CHANCE:
             Chance.cards.remove(card)
@@ -124,6 +124,9 @@ class Player:
         pass
 
     def pay_each(self, amount: int, players):
+        pass
+
+    def charge_each(self, amount: int, players):
         pass
 
     def purchase_location(self):
