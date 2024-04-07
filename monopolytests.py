@@ -375,6 +375,35 @@ class MonopolyTestCases(unittest.TestCase):
             self.assertEqual(1380 + (50 * (i + 1)), self.p1.balance)
         self.assertEqual(4, self.p2.location.space.rent)
 
+    def test_roll_again_exception(self):
+        with self.assertRaises(Exception):
+            self.monopoly.roll(6, 4)
+            self.monopoly.roll(6, 4)
+
+    def test_buy_property_as_brokie(self):
+        with self.assertRaises(Exception):
+            self.p1.balance = 0
+            self.monopoly.roll(5, 4)
+            self.p1.purchase_location()
+
+    def test_bankrupt_exception(self):
+        with self.assertRaises(Exception):
+            self.p1.declare_bankruptcy()
+
+    def test_declare_bankruptcy_results(self):
+        self.p2.balance = 1
+        self.monopoly.roll(5, 4)
+        self.p1.purchase_location()
+        self.assertEqual(1380, self.p1.balance)
+        self.monopoly.end_turn()
+        self.monopoly.roll(5, 4)
+        self.assertEqual(1381, self.p1.balance)
+        self.p2.balance = 1
+        self.p2.declare_bankruptcy()
+        self.assertEqual(1382, self.p1.balance)
+        self.monopoly.end_turn()
+        self.assertEqual(2, len(self.monopoly.active_players))
+
 
 if __name__ == '__main__':
     unittest.main()
