@@ -1,4 +1,4 @@
-from model.space import Space
+from gamemodel.space import Space
 
 
 class Go(Space):

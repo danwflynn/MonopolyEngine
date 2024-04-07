@@ -1,5 +1,5 @@
-from model.properties import *
-from model.player import Player
+from gamemodel.properties import *
+from gamemodel.player import Player
 from typing import List
 
 

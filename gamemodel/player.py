@@ -1,7 +1,7 @@
-from model.properties import *
-from model.jail import Jail
-from model.go import Go
-from model.deed import *
+from gamemodel.properties import *
+from gamemodel.jail import Jail
+from gamemodel.go import Go
+from gamemodel.deed import *
 
 
 class Piece(Enum):
