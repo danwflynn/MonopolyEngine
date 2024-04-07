@@ -7,6 +7,7 @@ from gamemodel.freeparking import FreeParking
 from gamemodel.properties import Housing
 from gamemodel.properties import Utility
 from gamemodel.tax import LuxuryTax
+from gamemodel.deed import *
 
 
 class MonopolyTestCases(unittest.TestCase):
@@ -441,6 +442,36 @@ class MonopolyTestCases(unittest.TestCase):
         self.assertEqual(1500, self.p1.balance)
         self.assertEqual(0, self.monopoly.free_parking_node.space.balance)
         self.monopoly.end_turn()
+
+    def test_advance_to_boardwalk_chance(self):
+        self.assertEqual("Advance to Boardwalk.", Chance.cards[0].message)
+        self.monopoly.roll(5, 2)
+        self.assertEqual("Boardwalk", self.p1.location.space.name)
+        self.assertEqual("Advance to Boardwalk.", Chance.cards[15].message)
+        self.assertEqual("Advance to St. Charles Place. If you pass \"Go\" collect $200.", Chance.cards[0].message)
+
+    def test_advance_to_st_charles_while_passing_go(self):
+        Chance.cards.rotate(-1)
+        self.assertEqual(1500, self.p1.balance)
+        self.assertEqual("Advance to St. Charles Place. If you pass \"Go\" collect $200.", Chance.cards[0].message)
+        self.monopoly.roll(5, 5)
+        self.monopoly.end_turn()
+        self.monopoly.roll(4, 4)
+        self.monopoly.end_turn()
+        self.monopoly.roll(3, 1)
+        self.assertEqual(1700, self.p1.balance)
+        self.assertEqual("St. Charles Place", self.p1.location.space.name)
+
+    def test_three_doubles_doesnt_land(self):
+        self.assertEqual("Advance to Boardwalk.", Chance.cards[0].message)
+        self.monopoly.roll(5, 5)
+        self.monopoly.end_turn()
+        self.monopoly.roll(5, 5)
+        self.monopoly.end_turn()
+        self.monopoly.roll(1, 1)
+        self.monopoly.end_turn()
+        self.assertEqual("Advance to Boardwalk.", Chance.cards[0].message)
+        self.assertEqual("Jail", self.p1.location.space.name)
 
 
 if __name__ == '__main__':
