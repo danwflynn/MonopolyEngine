@@ -50,19 +50,12 @@ class Player:
         if amount <= self.balance:
             self.balance -= amount
             recipient.balance += amount
-        elif self.__any_un_mortgaged_properties():
+        else:
             amount_paid = self.balance
             recipient.balance += amount_paid
             self.balance = 0
             self.debt += amount - amount_paid
             self.debt_to = recipient
-        else:
-            recipient.balance += self.balance
-            self.balance = 0
-            for prop in self.properties:
-                self.property_manager.reset(prop)
-                self.properties.remove(prop)
-                self.bankrupt = True
 
     def liquidate_everything(self):
         for prop in [x for x in self.properties if isinstance(x, Housing)]:
@@ -74,13 +67,32 @@ class Player:
 
     def pay_debt(self):
         if self.debt_to is None:
-            raise Exception("Can't pay debt when not in debt")
+            raise Exception("Can't pay singular debt when not in debt or if in debt to multiple people")
         if self.balance < self.debt:
             raise Exception("Not enough to pay debt")
         self.balance -= self.debt
-        self.debt_to.balance += self.debt
+        if isinstance(self.debt_to, Player):
+            self.debt_to.balance += self.debt
+        else:
+            amount_per_player = self.debt / len(self.debt_to)
+            for player in self.debt_to:
+                player.balance += amount_per_player
         self.debt = 0
         self.debt_to = None
+
+    def declare_bankruptcy(self):
+        if self.debt <= self.balance or self.__any_un_mortgaged_properties():
+            raise Exception("Cannot declare bankruptcy")
+        if isinstance(self.debt_to, Player):
+            self.debt_to.balance += self.balance
+        else:
+            amount_per_player = self.balance / len(self.debt_to)
+            for player in self.debt_to:
+                player.balance += amount_per_player
+        for prop in self.properties:
+            self.property_manager.reset(prop)
+            self.properties.remove(prop)
+            self.bankrupt = True
 
     def go_to_jail(self):
         while not isinstance(self.location.space, Jail):
@@ -115,19 +127,46 @@ class Player:
         self.land()
 
     def go_nearest_railroad(self):
-        pass
+        while not isinstance(self.location.space, Railroad):
+            self.location = self.location.next
+            if isinstance(self.location.space, Go):
+                self.balance += 200
+        self.land()
 
     def go_nearest_utility(self):
-        pass
+        while not isinstance(self.location.space, Utility):
+            self.location = self.location.next
+            if isinstance(self.location.space, Go):
+                self.balance += 200
+        self.land()
 
-    def repair_costs(self, houses: int, hotels: int):
-        pass
+    def repair_costs(self, house_repair_cost: int, hotel_repair_cost: int):
+        house_count = 0
+        hotel_count = 0
+        for prop in self.properties:
+            if isinstance(prop, Housing):
+                house_count += prop.houses
+                hotel_count += prop.hotels
+        return (house_count * house_repair_cost) + (hotel_count * hotel_repair_cost)
 
     def pay_each(self, amount: int, players):
-        pass
+        total_amount = amount * len(players)
+        if total_amount <= self.balance:
+            self.balance -= total_amount
+            for player in players:
+                player.balance += amount
+        else:
+            amount_paid = self.balance
+            amount_per_player = self.balance / len(players)
+            self.balance = 0
+            for player in players:
+                player.balance += amount_per_player
+            self.debt += total_amount - amount_paid
+            self.debt_to = players
 
     def charge_each(self, amount: int, players):
-        pass
+        for player in players:
+            player.charge(amount, self)
 
     def purchase_location(self):
         if not isinstance(self.location.space, Property):

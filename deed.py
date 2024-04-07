@@ -61,6 +61,12 @@ class Chance(Deed):
     def __init__(self):
         super().__init__("Chance")
 
+    def effect(self, player):
+        is_get_out_of_jail_free = isinstance(self.cards[0], GetOutOfJailFreeCard)
+        self.cards[0].f(player)
+        if not is_get_out_of_jail_free:
+            self.cards.rotate(-1)
+
 
 class CommunityChest(Deed):
     cards = deque()
@@ -87,3 +93,9 @@ class CommunityChest(Deed):
 
     def __init__(self):
         super().__init__("Community Chest")
+
+    def effect(self, player):
+        is_get_out_of_jail_free = isinstance(self.cards[0], GetOutOfJailFreeCard)
+        self.cards[0].f(player)
+        if not is_get_out_of_jail_free:
+            self.cards.rotate(-1)
