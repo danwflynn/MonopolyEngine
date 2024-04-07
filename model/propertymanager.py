@@ -1,5 +1,5 @@
-from properties import *
-from player import Player
+from model.properties import *
+from model.player import Player
 from typing import List
 
 

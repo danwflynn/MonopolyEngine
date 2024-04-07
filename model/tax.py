@@ -1,4 +1,4 @@
-from space import Space
+from model.space import Space
 
 
 class Tax(Space):

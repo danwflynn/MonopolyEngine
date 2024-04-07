@@ -1,15 +1,15 @@
 from typing import List
 import random
 
-from go import Go
-from player import Player
-from properties import *
-from deed import *
-from tax import *
-from jail import *
-from freeparking import FreeParking
-from spaceslinkedlist import CircularLinkedList
-from propertymanager import PropertyManager
+from model.go import Go
+from model.player import Player
+from model.properties import *
+from model.deed import *
+from model.tax import *
+from model.jail import *
+from model.freeparking import FreeParking
+from model.spaceslinkedlist import CircularLinkedList
+from model.propertymanager import PropertyManager
 
 
 class MonopolyGame:

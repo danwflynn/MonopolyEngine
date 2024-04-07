@@ -1,4 +1,4 @@
-from space import Space
+from model.space import Space
 from collections import deque
 from enum import Enum
 

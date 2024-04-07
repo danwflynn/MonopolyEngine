@@ -1,7 +1,7 @@
-from properties import *
-from jail import Jail
-from go import Go
-from deed import *
+from model.properties import *
+from model.jail import Jail
+from model.go import Go
+from model.deed import *
 
 
 class Piece(Enum):

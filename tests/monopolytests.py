@@ -1,12 +1,12 @@
 import unittest
-from monopolygame import MonopolyGame
-from player import Player, Piece
-from go import Go
-from jail import Jail
-from freeparking import FreeParking
-from properties import Housing
-from properties import Utility
-from tax import LuxuryTax
+from model.monopolygame import MonopolyGame
+from model.player import Player, Piece
+from model.go import Go
+from model.jail import Jail
+from model.freeparking import FreeParking
+from model.properties import Housing
+from model.properties import Utility
+from model.tax import LuxuryTax
 
 
 class MonopolyTestCases(unittest.TestCase):
