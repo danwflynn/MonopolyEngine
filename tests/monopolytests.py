@@ -404,6 +404,30 @@ class MonopolyTestCases(unittest.TestCase):
         self.monopoly.end_turn()
         self.assertEqual(2, len(self.monopoly.active_players))
 
+    def test_cant_end_turn_in_debt(self):
+        self.p2.balance = 1
+        self.monopoly.roll(5, 4)
+        self.p1.purchase_location()
+        self.monopoly.end_turn()
+        self.monopoly.roll(5, 4)
+        with self.assertRaises(Exception):
+            self.monopoly.end_turn()
+
+    def test_pay_debt(self):
+        self.p2.balance = 1
+        self.monopoly.roll(5, 4)
+        self.p1.purchase_location()
+        self.assertEqual(1380, self.p1.balance)
+        self.monopoly.end_turn()
+        self.monopoly.roll(5, 4)
+        self.assertEqual(1381, self.p1.balance)
+        self.p2.balance = 100
+        self.p2.pay_debt()
+        self.assertEqual(1388, self.p1.balance)
+        self.assertEqual(93, self.p2.balance)
+        self.monopoly.end_turn()
+        self.assertEqual(3, len(self.monopoly.active_players))
+
 
 if __name__ == '__main__':
     unittest.main()
