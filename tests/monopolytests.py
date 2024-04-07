@@ -428,6 +428,20 @@ class MonopolyTestCases(unittest.TestCase):
         self.monopoly.end_turn()
         self.assertEqual(3, len(self.monopoly.active_players))
 
+    def test_land_on_free_parking(self):
+        self.assertEqual(1500, self.p1.balance)
+        self.assertEqual(0, self.monopoly.free_parking_node.space.balance)
+        self.monopoly.roll(2, 2)
+        self.monopoly.end_turn()
+        self.assertEqual(1350, self.p1.balance)
+        self.assertEqual(150, self.monopoly.free_parking_node.space.balance)
+        self.monopoly.roll(3, 3)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 4)
+        self.assertEqual(1500, self.p1.balance)
+        self.assertEqual(0, self.monopoly.free_parking_node.space.balance)
+        self.monopoly.end_turn()
+
 
 if __name__ == '__main__':
     unittest.main()
