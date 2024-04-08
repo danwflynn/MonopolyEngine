@@ -24,7 +24,7 @@ class Property(Space):
 
     def effect(self, player):
         if self.owner is not None and self.owner is not player and not self.mortgaged:
-            player.charge(self.rent, self.owner)
+            player.charge(self.rent * player.rent_multiplier, self.owner)
 
     def get_value(self):
         if not self.mortgaged:
@@ -95,7 +95,7 @@ class Utility(Property):
         self.both_owned = False
 
     def effect(self, player):
-        factor = 10 if self.both_owned else 4
+        factor = 10 if self.both_owned or player.rent_multiplier == str else 4
         if self.owner is not None and self.owner is not player:
             player.charge(factor * player.last_roll, self.owner)
 

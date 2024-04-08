@@ -30,12 +30,14 @@ class Player:
         self.property_manager = None
         self.bankrupt = False
         self.jail_free_cards = []
+        self.rent_multiplier = 1
 
     def calculate_net_worth(self):
         return self.balance + sum([prop.get_value() for prop in self.properties])
 
     def land(self):
         self.location.space.effect(self)
+        self.rent_multiplier = 1
 
     def __any_un_mortgaged_properties(self):
         for prop in self.properties:
@@ -131,6 +133,7 @@ class Player:
             self.location = self.location.next
             if isinstance(self.location.space, Go):
                 self.balance += 200
+        self.rent_multiplier = 2
         self.land()
 
     def go_nearest_utility(self):
@@ -138,6 +141,7 @@ class Player:
             self.location = self.location.next
             if isinstance(self.location.space, Go):
                 self.balance += 200
+        self.rent_multiplier = str
         self.land()
 
     def repair_costs(self, house_repair_cost: int, hotel_repair_cost: int):

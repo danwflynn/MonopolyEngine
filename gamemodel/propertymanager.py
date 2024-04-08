@@ -37,8 +37,9 @@ class PropertyManager:
                 self.railroad_owners[old_owner].remove(prop)
             for railroad in self.railroad_owners[player]:
                 railroad.rent = 25 * (2 ** (len(self.railroad_owners[player]) - 1))
-            for railroad in self.railroad_owners[old_owner]:
-                railroad.rent = 25 * (2 ** (len(self.railroad_owners[old_owner]) - 1))
+            if old_owner is not None:
+                for railroad in self.railroad_owners[old_owner]:
+                    railroad.rent = 25 * (2 ** (len(self.railroad_owners[old_owner]) - 1))
         else:
             self.utility_owners[player].append(prop)
             if old_owner is not None:

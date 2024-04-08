@@ -450,8 +450,9 @@ class MonopolyTestCases(unittest.TestCase):
         self.assertEqual("Advance to Boardwalk.", Chance.cards[15].message)
         self.assertEqual("Advance to St. Charles Place. If you pass \"Go\" collect $200.", Chance.cards[0].message)
 
-    def test_advance_to_st_charles_while_passing_go(self):
-        Chance.cards.rotate(-1)
+    def test_advance_to_st_charles_while_passing_go_chance(self):
+        while Chance.cards[0].message != "Advance to St. Charles Place. If you pass \"Go\" collect $200.":
+            Chance.cards.rotate(-1)
         self.assertEqual(1500, self.p1.balance)
         self.assertEqual("Advance to St. Charles Place. If you pass \"Go\" collect $200.", Chance.cards[0].message)
         self.monopoly.roll(5, 5)
@@ -462,7 +463,9 @@ class MonopolyTestCases(unittest.TestCase):
         self.assertEqual(1700, self.p1.balance)
         self.assertEqual("St. Charles Place", self.p1.location.space.name)
 
-    def test_three_doubles_doesnt_land(self):
+    def test_three_doubles_doesnt_land_chance(self):
+        while Chance.cards[0].message != "Advance to Boardwalk.":
+            Chance.cards.rotate(1)
         self.assertEqual("Advance to Boardwalk.", Chance.cards[0].message)
         self.monopoly.roll(5, 5)
         self.monopoly.end_turn()
@@ -472,6 +475,65 @@ class MonopolyTestCases(unittest.TestCase):
         self.monopoly.end_turn()
         self.assertEqual("Advance to Boardwalk.", Chance.cards[0].message)
         self.assertEqual("Jail", self.p1.location.space.name)
+
+    def test_go_back_three_chance(self):
+        while Chance.cards[0].message != "Go back three spaces.":
+            Chance.cards.rotate(-1)
+        self.assertEqual("Go back three spaces.", Chance.cards[0].message)
+        self.monopoly.roll(5, 2)
+        self.assertEqual("Income Tax", self.p1.location.space.name)
+
+    def test_advance_to_nearest_railroad_chance(self):
+        while Chance.cards[0].message != "Advance to the nearest railroad. If unowned, you " \
+                                         "may buy it from the bank. If owned, pay the owner twice the rental to " \
+                                         "which they are otherwise entitled.":
+            Chance.cards.rotate(-1)
+        self.assertEqual("Advance to the nearest railroad. If unowned, you may buy it from the bank. "
+                         "If owned, pay the owner twice the rental to which they are otherwise entitled.",
+                         Chance.cards[0].message)
+        self.monopoly.roll(5, 5)
+        self.monopoly.end_turn()
+        self.monopoly.roll(3, 2)
+        self.p1.purchase_location()
+        self.assertEqual(self.p1, self.p1.location.space.owner)
+        self.assertEqual(1300, self.p1.balance)
+        self.assertEqual(25, self.p1.location.space.rent)
+        self.monopoly.end_turn()
+        self.monopoly.roll(5, 2)
+        self.monopoly.end_turn()
+        self.assertEqual(self.p1.location, self.p2.location)
+        self.assertEqual(1350, self.p1.balance)
+        self.assertEqual(1450, self.p2.balance)
+
+    def test_buy_all_railroads(self):
+        self.monopoly.roll(4, 1)
+        self.p1.purchase_location()
+        self.assertEqual(25, self.p1.location.space.rent)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 4)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 4)
+        self.monopoly.end_turn()
+        self.monopoly.roll(5, 5)
+        self.p1.purchase_location()
+        self.assertEqual(50, self.p1.location.space.rent)
+        self.monopoly.end_turn()
+        self.monopoly.roll(5, 5)
+        self.p1.purchase_location()
+        self.assertEqual(100, self.p1.location.space.rent)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 4)
+        self.p1.purchase_location()
+        self.assertEqual(200, self.p1.location.space.rent)
+        self.monopoly.end_turn()
+        self.p1.player_mortgage("Reading Railroad")
+        self.assertEqual(200, self.p1.location.space.rent)
+        self.p1.player_mortgage("Pennsylvania Railroad")
+        self.assertEqual(200, self.p1.location.space.rent)
+        self.p1.player_mortgage("B&O Railroad")
+        self.assertEqual(200, self.p1.location.space.rent)
+        self.p1.player_mortgage("Short Line")
+        self.assertEqual(200, self.p1.location.space.rent)
 
 
 if __name__ == '__main__':
