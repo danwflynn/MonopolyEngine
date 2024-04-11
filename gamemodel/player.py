@@ -65,11 +65,11 @@ class Player:
                 self.property_manager.sell_hotel(prop)
             self.property_manager.sell_houses(prop, prop.houses)
         for prop in [x for x in self.properties if not x.mortgaged]:
-            prop.mortgage()
+            prop.prop_mortgage()
 
     def pay_debt(self):
         if self.debt_to is None:
-            raise Exception("Can't pay singular debt when not in debt or if in debt to multiple people")
+            raise Exception("Can't pay debt when not in debt")
         if self.balance < self.debt:
             raise Exception("Not enough to pay debt")
         self.balance -= self.debt

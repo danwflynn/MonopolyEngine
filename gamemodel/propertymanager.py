@@ -46,8 +46,9 @@ class PropertyManager:
                 self.utility_owners[old_owner].remove(prop)
             for utility in self.utility_owners[player]:
                 utility.both_owned = len(self.utility_owners[player]) == 2
-            for utility in self.utility_owners[old_owner]:
-                utility.both_owned = len(self.utility_owners[old_owner]) == 2
+            if old_owner is not None:
+                for utility in self.utility_owners[old_owner]:
+                    utility.both_owned = len(self.utility_owners[old_owner]) == 2
 
     def claim_monopoly(self, monopoly: List[Housing], player: Player):
         if len(set([prop.color for prop in monopoly])) != 1:

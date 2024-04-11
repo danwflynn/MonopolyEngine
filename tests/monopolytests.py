@@ -504,6 +504,7 @@ class MonopolyTestCases(unittest.TestCase):
         self.assertEqual(self.p1.location, self.p2.location)
         self.assertEqual(1350, self.p1.balance)
         self.assertEqual(1450, self.p2.balance)
+        self.assertEqual(1, self.p2.rent_multiplier)
 
     def test_buy_all_railroads(self):
         self.monopoly.roll(4, 1)
@@ -534,6 +535,176 @@ class MonopolyTestCases(unittest.TestCase):
         self.assertEqual(200, self.p1.location.space.rent)
         self.p1.player_mortgage("Short Line")
         self.assertEqual(200, self.p1.location.space.rent)
+
+    def test_advance_to_nearest_utility_chance_and_use_utilities(self):
+        while Chance.cards[0].message != "Advance to the nearest utility. If unowned, you may buy it from the bank." \
+                                         "If owned, throw dice and pay owner a total ten times amount thrown.":
+            Chance.cards.rotate(-1)
+        self.assertEqual("Advance to the nearest utility. If unowned, you may buy it from the bank."
+                         "If owned, throw dice and pay owner a total ten times amount thrown.",
+                         Chance.cards[0].message)
+        self.assertEqual(1500, self.p1.balance)
+        self.assertEqual(1500, self.p2.balance)
+        self.assertEqual(1500, self.p3.balance)
+        self.monopoly.roll(6, 6)
+        self.p1.purchase_location()
+        self.assertEqual(1350, self.p1.balance)
+        self.monopoly.end_turn()
+        self.monopoly.roll(1, 2)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.assertEqual(1398, self.p1.balance)
+        self.assertEqual(1452, self.p2.balance)
+        self.monopoly.end_turn()
+        self.monopoly.roll(1, 2)
+        self.monopoly.end_turn()
+        self.monopoly.roll(3, 4)
+        self.assertEqual(1468, self.p1.balance)
+        self.assertEqual(1430, self.p3.balance)
+        self.assertEqual(1, self.p3.rent_multiplier)
+        self.monopoly.end_turn()
+        self.monopoly.roll(5, 5)
+        self.monopoly.end_turn()
+        self.monopoly.roll(1, 2)
+        self.p1.purchase_location()
+        self.assertEqual(1318, self.p1.balance)
+        self.assertEqual(1452, self.p2.balance)
+        self.monopoly.end_turn()
+        self.monopoly.roll(5, 5)
+        self.monopoly.end_turn()
+        self.monopoly.roll(1, 2)
+        self.assertEqual(1348, self.p1.balance)
+        self.assertEqual(1422, self.p2.balance)
+
+    def test_invalid_dice_roll(self):
+        with self.assertRaises(Exception):
+            self.monopoly.roll(-1, 7)
+
+    def test_try_to_roll_in_jail(self):
+        self.monopoly.roll(5, 5)
+        self.monopoly.end_turn()
+        self.monopoly.roll(5, 5)
+        self.monopoly.end_turn()
+        self.monopoly.roll(5, 5)
+        self.monopoly.end_turn()
+        self.assertTrue(isinstance(self.p1.location.space, Jail))
+        self.monopoly.roll(6, 4)
+        self.assertTrue(isinstance(self.p2.location.space, Jail))
+        self.monopoly.end_turn()
+        self.monopoly.roll(4, 6)
+        self.assertTrue(isinstance(self.p3.location.space, Jail))
+        self.monopoly.end_turn()
+        with self.assertRaises(Exception):
+            self.monopoly.roll(2, 1)
+
+    def test_end_turn_before_rolling(self):
+        with self.assertRaises(Exception):
+            self.monopoly.end_turn()
+
+    def test_bail_while_not_in_jail(self):
+        with self.assertRaises(Exception):
+            self.monopoly.bail()
+
+    def test_jail_roll_after_rolling(self):
+        self.monopoly.roll(6, 4)
+        with self.assertRaises(Exception):
+            self.monopoly.jail_roll(3, 6)
+
+    def test_invalid_jail_roll(self):
+        with self.assertRaises(Exception):
+            self.monopoly.jail_roll(-1, 7)
+
+    def test_not_in_jail_jail_roll(self):
+        with self.assertRaises(Exception):
+            self.monopoly.jail_roll(1, 4)
+
+    def test_starting_string(self):
+        self.assertEqual(str(self.monopoly), "Dan : Go\nChris : Go\nLucas : Go\n")
+
+    def test_linked_list_string(self):
+        self.assertEqual(str(self.monopoly.board), 'Go ->\n'
+                                                   'Mediterranean Avenue ->\n'
+                                                   'Community Chest ->\n'
+                                                   'Baltic Avenue ->\n'
+                                                   'Income Tax ->\n'
+                                                   'Reading Railroad ->\n'
+                                                   'Oriental Avenue ->\n'
+                                                   'Chance ->\n'
+                                                   'Vermont Avenue ->\n'
+                                                   'Connecticut Avenue ->\n'
+                                                   'Jail ->\n'
+                                                   'St. Charles Place ->\n'
+                                                   'Electric Company ->\n'
+                                                   'States Avenue ->\n'
+                                                   'Virginia Avenue ->\n'
+                                                   'Pennsylvania Railroad ->\n'
+                                                   'St. James Place ->\n'
+                                                   'Community Chest ->\n'
+                                                   'Tennessee Avenue ->\n'
+                                                   'New York Avenue ->\n'
+                                                   'Free Parking ->\n'
+                                                   'Kentucky Avenue ->\n'
+                                                   'Chance ->\n'
+                                                   'Indiana Avenue ->\n'
+                                                   'Illinois Avenue ->\n'
+                                                   'B&O Railroad ->\n'
+                                                   'Atlantic Avenue ->\n'
+                                                   'Ventnor Avenue ->\n'
+                                                   'Water Works ->\n'
+                                                   'Marvin Gardens ->\n'
+                                                   'Go to Jail ->\n'
+                                                   'Pacific Avenue ->\n'
+                                                   'North Carolina Avenue ->\n'
+                                                   'Community Chest ->\n'
+                                                   'Pennsylvania Avenue ->\n'
+                                                   'Short Line ->\n'
+                                                   'Chance ->\n'
+                                                   'Park Place ->\n'
+                                                   'Luxury Tax ->\n'
+                                                   'Boardwalk')
+
+    def test_get_into_debt_while_owning_property_and_liquidate(self):
+        self.monopoly.roll(5, 5)
+        self.monopoly.end_turn()
+        self.monopoly.roll(5, 4)
+        self.p1.purchase_location()
+        self.monopoly.end_turn()
+        self.assertEqual(1, len(self.p1.properties))
+        self.assertEqual(1300, self.p1.balance)
+        self.monopoly.roll(3, 3)
+        self.p2.purchase_location()
+        self.monopoly.end_turn()
+        self.monopoly.roll(4, 4)
+        self.p2.purchase_location()
+        self.assertEqual(1240, self.p2.balance)
+        self.p2.balance = 0
+        self.monopoly.end_turn()
+        self.monopoly.roll(3, 2)
+        self.p2.liquidate_everything()
+        self.assertEqual(130, self.p2.balance)
+        self.p2.pay_debt()
+        self.assertEqual(114, self.p2.balance)
+        self.assertEqual(1316, self.p1.balance)
+        self.monopoly.end_turn()
+
+    def test_declare_bankruptcy_when_you_have_property(self):
+        self.monopoly.roll(1, 2)
+        self.p1.purchase_location()
+        self.p1.balance = 0
+        self.monopoly.end_turn()
+        self.monopoly.roll(2, 3)
+        self.p2.purchase_location()
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 4)
+        self.monopoly.end_turn()
+        self.monopoly.roll(1, 1)
+        self.assertTrue(self.p1.debt > self.p1.balance)
+        with self.assertRaises(Exception):
+            self.p1.declare_bankruptcy()
+
+    def test_try_to_pay_debt_when_not_in_debt(self):
+        with self.assertRaises(Exception):
+            self.p1.pay_debt()
 
 
 if __name__ == '__main__':
