@@ -53,7 +53,7 @@ class Chance(Deed):
     cards.append(Card("Advance to Illinois Avenue. If you pass \"Go\" collect $200.",
                       lambda player: player.advance_to("Illinois Avenue")))
     cards.append(Card("You have been elected chairman of the board. Pay each player $50",
-                      lambda player: player.pay_each(50, [x for x in Deed.game.players if x is not player])))
+                      lambda player: player.pay_each(50, [x for x in Deed.game.active_players if x is not player])))
     cards.append(Card("Advance to the nearest railroad. If unowned, you may buy it from the bank."
                       "If owned, pay the owner twice the rental to which they are otherwise entitled.",
                       lambda player: player.go_nearest_railroad()))
@@ -77,11 +77,11 @@ class CommunityChest(Deed):
     cards.append(GetOutOfJailFreeCard(CardType.COMMUNITY_CHEST))
     cards.append(Card("Go directly to jail. Do not pass Go, Do not collect $200.", lambda player: player.go_to_jail()))
     cards.append(Card("Grand Opera Night. Collect $50 from every player for opening night seats.",
-                      lambda player: player.charge_each(50, [x for x in Deed.game.players if x is not player])))
+                      lambda player: player.charge_each(50, [x for x in Deed.game.active_players if x is not player])))
     cards.append(Card("Holiday Fund matures. Receive $100.", lambda player: player.collect(100)))
     cards.append(Card("Income tax refund. Collect $20.", lambda player: player.collect(20)))
     cards.append(Card("It is your birthday. Collect $10 from every player.",
-                      lambda player: player.charge_each(10, [x for x in Deed.game.players if x is not player])))
+                      lambda player: player.charge_each(10, [x for x in Deed.game.active_players if x is not player])))
     cards.append(Card("Life insurance matures. Collect $100", lambda player: player.collect(100)))
     cards.append(Card("Hospital Fees. Pay $50.", lambda player: player.charge(50, Deed.game.free_parking_node.space)))
     cards.append(Card("School Fees. Pay $50.", lambda player: player.charge(50, Deed.game.free_parking_node.space)))
