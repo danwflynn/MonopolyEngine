@@ -63,7 +63,10 @@ class Player:
         for prop in [x for x in self.properties if isinstance(x, Housing)]:
             if prop.hotels:
                 self.property_manager.sell_hotel(prop)
-            self.property_manager.sell_houses(prop, prop.houses)
+        for i in range(4):
+            for prop in [x for x in self.properties if isinstance(x, Housing)]:
+                if prop.houses:
+                    self.property_manager.sell_houses(prop, 1)
         for prop in [x for x in self.properties if not x.mortgaged]:
             prop.prop_mortgage()
 

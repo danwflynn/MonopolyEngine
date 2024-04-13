@@ -706,6 +706,185 @@ class MonopolyTestCases(unittest.TestCase):
         with self.assertRaises(Exception):
             self.p1.pay_debt()
 
+    def test_try_to_pay_debt_but_not_enough(self):
+        self.monopoly.roll(3, 2)
+        self.p1.purchase_location()
+        self.monopoly.end_turn()
+        self.p2.balance = 0
+        self.monopoly.roll(3, 2)
+        with self.assertRaises(Exception):
+            self.p2.pay_debt()
+
+    def test_mortgaging_monopoly(self):
+        self.monopoly.roll(1, 2)
+        self.p1.purchase_location()
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 4)
+            self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 4)
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 5)
+            self.monopoly.end_turn()
+        self.monopoly.roll(1, 3)
+        self.p1.purchase_location()
+        self.assertEqual(1580, self.p1.balance)
+        self.assertEqual(2, len(self.p1.properties))
+        for prop in self.p1.properties:
+            if prop.name == "Mediterranean Avenue":
+                self.assertEqual(4, prop.rent)
+            elif prop.name == "Baltic Avenue":
+                self.assertEqual(8, prop.rent)
+
+        self.p1.player_mortgage("Mediterranean Avenue")
+
+        self.assertEqual(1610, self.p1.balance)
+        self.assertEqual(2, len(self.p1.properties))
+        for prop in self.p1.properties:
+            if prop.name == "Mediterranean Avenue":
+                self.assertEqual(4, prop.rent)
+                self.assertTrue(prop.mortgaged)
+            elif prop.name == "Baltic Avenue":
+                self.assertEqual(8, prop.rent)
+                self.assertFalse(prop.mortgaged)
+
+        self.p1.player_un_mortgage("Mediterranean Avenue")
+
+        self.assertEqual(1577, self.p1.balance)
+        self.assertEqual(2, len(self.p1.properties))
+        for prop in self.p1.properties:
+            if prop.name == "Mediterranean Avenue":
+                self.assertEqual(4, prop.rent)
+                self.assertFalse(prop.mortgaged)
+            elif prop.name == "Baltic Avenue":
+                self.assertEqual(8, prop.rent)
+                self.assertFalse(prop.mortgaged)
+
+        self.p1.build_houses("Mediterranean Avenue", 1)
+
+        self.assertEqual(1527, self.p1.balance)
+
+        self.p1.player_mortgage("Baltic Avenue")
+
+        self.assertEqual(1557, self.p1.balance)
+        self.assertEqual(2, len(self.p1.properties))
+        for prop in self.p1.properties:
+            if prop.name == "Mediterranean Avenue":
+                self.assertEqual(10, prop.rent)
+                self.assertFalse(prop.mortgaged)
+            elif prop.name == "Baltic Avenue":
+                self.assertEqual(8, prop.rent)
+                self.assertTrue(prop.mortgaged)
+
+        with self.assertRaises(Exception):
+            self.p1.player_mortgage("Mediterranean Avenue")
+
+    def test_cant_afford_to_un_mortgage(self):
+        self.monopoly.roll(3, 2)
+        self.p1.purchase_location()
+        self.p1.player_mortgage("Reading Railroad")
+        self.p1.balance = 109
+        with self.assertRaises(Exception):
+            self.p1.player_un_mortgage("Reading Railroad")
+
+    def test_collect_from_community_chest(self):
+        self.assertEqual(1500, self.p1.balance)
+        while CommunityChest.cards[0].message != "Bank error in your favor. Collect $200.":
+            CommunityChest.cards.rotate(-1)
+        self.monopoly.roll(1, 1)
+        self.assertEqual(1700, self.p1.balance)
+        self.assertEqual("Community Chest", self.p1.location.space.name)
+
+    def test_no_property_by_that_name(self):
+        with self.assertRaises(Exception):
+            self.p1.player_mortgage("a")
+
+    def test_cant_buy_space_that_is_not_property(self):
+        with self.assertRaises(Exception):
+            self.p1.purchase_location()
+
+    def test_try_to_purchase_already_owned_property(self):
+        self.monopoly.roll(3, 2)
+        self.p1.purchase_location()
+        self.monopoly.end_turn()
+        self.monopoly.roll(4, 1)
+        with self.assertRaises(Exception):
+            self.p2.purchase_location()
+
+    def test_liquidate_hotels(self):
+        self.monopoly.roll(1, 2)
+        self.p1.purchase_location()
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 4)
+            self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 4)
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 5)
+            self.monopoly.end_turn()
+        self.monopoly.roll(1, 3)
+        self.p1.purchase_location()
+        self.assertEqual(1580, self.p1.balance)
+        self.assertEqual(2, len(self.p1.properties))
+        for prop in self.p1.properties:
+            if prop.name == "Mediterranean Avenue":
+                self.assertEqual(4, prop.rent)
+            elif prop.name == "Baltic Avenue":
+                self.assertEqual(8, prop.rent)
+
+        self.p1.build_houses("Mediterranean Avenue", 1)
+        for prop in self.p1.properties:
+            if prop.name == "Mediterranean Avenue":
+                self.assertEqual(1, prop.houses)
+            elif prop.name == "Baltic Avenue":
+                self.assertEqual(0, prop.houses)
+        self.p1.build_houses("Baltic Avenue", 2)
+        self.p1.build_houses("Mediterranean Avenue", 2)
+        self.p1.build_houses("Baltic Avenue", 2)
+        self.p1.build_houses("Mediterranean Avenue", 1)
+        for prop in self.p1.properties:
+            if prop.name == "Mediterranean Avenue":
+                self.assertEqual(4, prop.houses)
+            elif prop.name == "Baltic Avenue":
+                self.assertEqual(4, prop.houses)
+
+        self.assertEqual(24, self.p1.property_manager.houses)
+        for prop in self.p1.properties:
+            if prop.name == "Mediterranean Avenue":
+                self.assertEqual(160, prop.rent)
+            elif prop.name == "Baltic Avenue":
+                self.assertEqual(320, prop.rent)
+
+        self.assertEqual(24, self.p1.property_manager.houses)
+        self.assertEqual(12, self.p1.property_manager.hotels)
+
+        self.p1.build_hotel("Mediterranean Avenue")
+        self.p1.build_hotel("Baltic Avenue")
+
+        self.assertEqual(32, self.p1.property_manager.houses)
+        self.assertEqual(10, self.p1.property_manager.hotels)
+        for prop in self.p1.properties:
+            if prop.name == "Mediterranean Avenue":
+                self.assertEqual(250, prop.rent)
+            elif prop.name == "Baltic Avenue":
+                self.assertEqual(450, prop.rent)
+
+        self.assertEqual(1080, self.p1.balance)
+        self.p1.liquidate_everything()
+        self.assertEqual(32, self.p1.property_manager.houses)
+        self.assertEqual(12, self.p1.property_manager.hotels)
+        self.assertEqual(1390, self.p1.balance)
+
 
 if __name__ == '__main__':
     unittest.main()
