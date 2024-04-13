@@ -955,6 +955,56 @@ class MonopolyTestCases(unittest.TestCase):
         self.assertEqual(1450, self.p2.balance)
         self.assertEqual(1450, self.p3.balance)
 
+    def test_charge_each_debt_end_turn(self):
+        self.assertEqual(1500, self.p1.balance)
+        self.p3.balance = 10
+        while CommunityChest.cards[0].message != "Grand Opera Night. Collect $50 from every player " \
+                                                 "for opening night seats.":
+            CommunityChest.cards.rotate(-1)
+        self.monopoly.roll(1, 1)
+        self.assertEqual(1560, self.p1.balance)
+        with self.assertRaises(Exception):
+            self.monopoly.end_turn()
+
+    def test_pay_each(self):
+        self.assertEqual(1500, self.p1.balance)
+        while Chance.cards[0].message != "You have been elected chairman of the board. Pay each player $50":
+            Chance.cards.rotate(-1)
+        self.monopoly.roll(3, 4)
+        self.assertEqual(1400, self.p1.balance)
+        self.assertEqual(1550, self.p2.balance)
+        self.assertEqual(1550, self.p3.balance)
+
+    def test_pay_each_debt(self):
+        self.p1.balance = 40
+        while Chance.cards[0].message != "You have been elected chairman of the board. Pay each player $50":
+            Chance.cards.rotate(-1)
+        self.monopoly.roll(3, 4)
+        self.assertEqual(0, self.p1.balance)
+        self.assertEqual(1520, self.p2.balance)
+        self.assertEqual(1520, self.p3.balance)
+        self.p1.balance = 60
+        self.p1.pay_debt()
+        self.assertEqual(0, self.p1.balance)
+        self.assertEqual(1550, self.p2.balance)
+        self.assertEqual(1550, self.p3.balance)
+
+    def test_declare_bankruptcy_with_multiple_debts(self):
+        self.p1.balance = 40
+        while Chance.cards[0].message != "You have been elected chairman of the board. Pay each player $50":
+            Chance.cards.rotate(-1)
+        self.monopoly.roll(3, 4)
+        self.assertEqual(0, self.p1.balance)
+        self.assertEqual(1520, self.p2.balance)
+        self.assertEqual(1520, self.p3.balance)
+        self.p1.balance = 40
+        self.p1.declare_bankruptcy()
+        self.assertEqual(0, self.p1.balance)
+        self.assertEqual(1540, self.p2.balance)
+        self.assertEqual(1540, self.p3.balance)
+        self.monopoly.end_turn()
+        self.assertEqual(2, len(self.monopoly.active_players))
+
 
 if __name__ == '__main__':
     unittest.main()

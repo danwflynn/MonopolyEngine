@@ -98,6 +98,7 @@ class Player:
             self.property_manager.reset(prop)
             self.properties.remove(prop)
         self.bankrupt = True
+        self.balance = 0
 
     def go_to_jail(self):
         while not isinstance(self.location.space, Jail):
