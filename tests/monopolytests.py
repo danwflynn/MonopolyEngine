@@ -1005,6 +1005,213 @@ class MonopolyTestCases(unittest.TestCase):
         self.monopoly.end_turn()
         self.assertEqual(2, len(self.monopoly.active_players))
 
+    def test_repair_costs_with_no_buildings(self):
+        self.assertEqual(1500, self.p1.balance)
+        while Chance.cards[0].message != "Make general repairs on all you property: for each house pay " \
+                                         "$25, for each hotel pay $100.":
+            Chance.cards.rotate(-1)
+        self.monopoly.roll(2, 5)
+        self.assertEqual(1500, self.p1.balance)
+
+    def test_repair_costs_with_buildings(self):
+        self.p1.balance = 3000
+        while Chance.cards[0].message != "Make general repairs on all you property: for each house pay " \
+                                         "$25, for each hotel pay $100.":
+            Chance.cards.rotate(-1)
+        for i in range(2):
+            self.monopoly.roll(6, 6)
+            self.monopoly.end_turn()
+        self.monopoly.roll(5, 2)
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 4)
+            self.monopoly.end_turn()
+        self.monopoly.roll(3, 3)
+        self.p1.purchase_location()
+        self.monopoly.end_turn()
+        self.monopoly.roll(1, 1)
+        self.p1.purchase_location()
+        self.p1.build_houses("Park Place", 1)
+        self.p1.build_houses("Boardwalk", 2)
+        self.p1.build_houses("Park Place", 2)
+        self.p1.build_houses("Boardwalk", 2)
+        self.p1.build_houses("Park Place", 1)
+        self.p1.build_hotel("Boardwalk")
+        self.assertEqual(450, self.p1.balance)
+        self.monopoly.end_turn()
+        self.monopoly.roll(5, 3)
+        self.assertEqual(450, self.p1.balance)
+        self.assertEqual("Chance", self.p1.location.space.name)
+
+    def test_three_dubs_doesnt_land(self):
+        self.p1.balance = 3000
+        while Chance.cards[0].message != "Make general repairs on all you property: for each house pay " \
+                                         "$25, for each hotel pay $100.":
+            Chance.cards.rotate(-1)
+        for i in range(2):
+            self.monopoly.roll(6, 6)
+            self.monopoly.end_turn()
+        self.monopoly.roll(5, 2)
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 4)
+            self.monopoly.end_turn()
+        self.monopoly.roll(3, 3)
+        self.p1.purchase_location()
+        self.monopoly.end_turn()
+        self.monopoly.roll(1, 1)
+        self.p1.purchase_location()
+        self.p1.build_houses("Park Place", 1)
+        self.p1.build_houses("Boardwalk", 2)
+        self.p1.build_houses("Park Place", 2)
+        self.p1.build_houses("Boardwalk", 2)
+        self.p1.build_houses("Park Place", 1)
+        self.p1.build_hotel("Boardwalk")
+        self.assertEqual(450, self.p1.balance)
+        self.monopoly.end_turn()
+        self.monopoly.roll(4, 4)
+        self.assertEqual(450, self.p1.balance)
+        self.assertEqual("Jail", self.p1.location.space.name)
+        self.assertEqual("Make general repairs on all you property: for each house pay "
+                         "$25, for each hotel pay $100.", Chance.cards[0].message)
+
+    def test_declare_bankruptcy_with_monopolies_and_properties(self):
+        self.p1.balance = 3000
+        for i in range(2):
+            self.monopoly.roll(6, 6)
+            self.monopoly.end_turn()
+        self.monopoly.roll(5, 2)
+        self.monopoly.end_turn()
+        self.monopoly.roll(3, 2)
+        self.p2.purchase_location()
+        self.assertEqual(1300, self.p2.balance)
+        self.p2.location.space.rent = 10000
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 4)
+        self.monopoly.end_turn()
+        self.monopoly.roll(3, 3)
+        self.p1.purchase_location()
+        self.monopoly.end_turn()
+        self.monopoly.roll(1, 1)
+        self.p1.purchase_location()
+        self.p1.build_houses("Park Place", 1)
+        self.p1.build_houses("Boardwalk", 2)
+        self.p1.build_houses("Park Place", 2)
+        self.p1.build_houses("Boardwalk", 2)
+        self.p1.build_houses("Park Place", 1)
+        self.p1.build_hotel("Boardwalk")
+        self.p1.build_hotel("Park Place")
+        self.assertEqual(250, self.p1.balance)
+        self.monopoly.end_turn()
+        self.monopoly.roll(4, 2)
+        self.assertEqual(1750, self.p2.balance)
+        self.assertEqual(9550, self.p1.debt)
+        self.assertEqual(0, self.p1.balance)
+        self.p1.liquidate_everything()
+        self.assertEqual(1375, self.p1.balance)
+        self.p1.declare_bankruptcy()
+        self.assertEqual(0, self.p1.balance)
+        self.assertEqual(0, len(self.p1.properties))
+        self.assertEqual(3125, self.p2.balance)
+        self.monopoly.end_turn()
+        while CommunityChest.cards[0].message != "Grand Opera Night. Collect $50 from every player " \
+                                                 "for opening night seats.":
+            CommunityChest.cards.rotate(-1)
+        self.monopoly.roll(6, 6)
+        self.assertEqual(3175, self.p2.balance)
+        self.assertEqual(1450, self.p3.balance)
+        self.assertEqual("Community Chest", self.p2.location.space.name)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 4)
+        self.assertEqual("Boardwalk", self.p2.location.space.name)
+        self.assertEqual(None, self.p2.location.space.owner)
+        self.assertEqual("Jail", self.p3.location.space.name)
+        self.monopoly.end_turn()
+        self.monopoly.roll(4, 4)
+        self.monopoly.end_turn()
+        self.monopoly.roll(5, 5)
+        self.monopoly.end_turn()
+        self.monopoly.roll(4, 5)
+        self.assertEqual("Park Place", self.p3.location.space.name)
+        self.assertEqual(None, self.p3.location.space.owner)
+
+    def test_chance_jail_free_card(self):
+        pass
+
+    def test_community_chest_jail_free_card(self):
+        pass
+
+    def test_both_jail_free_cards(self):
+        pass
+
+    def test_go_nearest_railroad_pass_go(self):
+        pass
+
+    def test_go_nearest_utility_pass_go(self):
+        pass
+
+    def test_try_to_mortgage_unowned_property(self):
+        pass
+
+    def test_try_to_un_mortgage_unowned_property(self):
+        pass
+
+    def test_try_to_mortgage_mortgaged_property(self):
+        pass
+
+    def test_try_to_un_mortgage_un_mortgaged_property(self):
+        pass
+
+    def test_cant_afford_house(self):
+        while Chance.cards[0].message != "Make general repairs on all you property: for each house pay " \
+                                         "$25, for each hotel pay $100.":
+            Chance.cards.rotate(-1)
+        for i in range(2):
+            self.monopoly.roll(6, 6)
+            self.monopoly.end_turn()
+        self.monopoly.roll(5, 2)
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 4)
+            self.monopoly.end_turn()
+        self.monopoly.roll(3, 3)
+        self.p1.purchase_location()
+        self.monopoly.end_turn()
+        self.monopoly.roll(1, 1)
+        self.p1.purchase_location()
+        self.p1.build_houses("Park Place", 1)
+        self.p1.build_houses("Boardwalk", 2)
+        with self.assertRaises(Exception):
+            self.p1.build_houses("Park Place", 1)
+
+    def test_cant_afford_hotel(self):
+        self.p1.balance = 2400
+        while Chance.cards[0].message != "Make general repairs on all you property: for each house pay " \
+                                         "$25, for each hotel pay $100.":
+            Chance.cards.rotate(-1)
+        for i in range(2):
+            self.monopoly.roll(6, 6)
+            self.monopoly.end_turn()
+        self.monopoly.roll(5, 2)
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 4)
+            self.monopoly.end_turn()
+        self.monopoly.roll(3, 3)
+        self.p1.purchase_location()
+        self.monopoly.end_turn()
+        self.monopoly.roll(1, 1)
+        self.p1.purchase_location()
+        self.p1.build_houses("Park Place", 1)
+        self.p1.build_houses("Boardwalk", 2)
+        self.p1.build_houses("Park Place", 2)
+        self.p1.build_houses("Boardwalk", 2)
+        self.p1.build_houses("Park Place", 1)
+        with self.assertRaises(Exception):
+            self.p1.build_hotel("Boardwalk")
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -96,7 +96,7 @@ class Player:
                 player.balance += amount_per_player
         for prop in self.properties:
             self.property_manager.reset(prop)
-            self.properties.remove(prop)
+        self.properties.clear()
         self.bankrupt = True
         self.balance = 0
 

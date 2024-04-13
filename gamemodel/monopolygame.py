@@ -114,12 +114,13 @@ class MonopolyGame:
     def end_turn(self):
         if self.roll_available:
             raise Exception("Can't end turn before rolling")
-        if self.active_players[0].bankrupt:
+        player_out = self.active_players[0].bankrupt
+        if player_out:
             self.bankrupt_players.append(self.active_players.popleft())
         for player in self.active_players:
             if player.debt != 0:
                 raise Exception("Can't end turn when a player is in debt")
-        if self.doubles_in_a_row == 0:
+        if self.doubles_in_a_row == 0 and not player_out:
             self.active_players.rotate(-1)
         self.roll_available = True
 
