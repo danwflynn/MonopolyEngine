@@ -125,7 +125,7 @@ class Player:
             Chance.cards.append(self.jail_free_cards[0])
         else:
             CommunityChest.cards.append(self.jail_free_cards[0])
-        self.jail_free_cards.pop()
+        self.jail_free_cards.pop(0)
 
     def go_back(self, n: int):
         for i in range(n):

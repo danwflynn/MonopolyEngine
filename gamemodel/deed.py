@@ -23,7 +23,7 @@ class Card:
 
 class GetOutOfJailFreeCard(Card):
     def __init__(self, card_type: CardType):
-        super().__init__("Get out of jail free.", lambda player: player.add_jail_free_card())
+        super().__init__("Get out of jail free.", lambda player: player.add_jail_free_card(self))
         self.card_type = card_type
 
 

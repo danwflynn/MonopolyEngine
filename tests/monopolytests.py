@@ -1138,12 +1138,97 @@ class MonopolyTestCases(unittest.TestCase):
         self.assertEqual(None, self.p3.location.space.owner)
 
     def test_chance_jail_free_card(self):
-        pass
+        self.assertEqual(16, len(Chance.cards))
+        self.assertEqual(0, len(self.p1.jail_free_cards))
+        while not isinstance(Chance.cards[0], GetOutOfJailFreeCard):
+            Chance.cards.rotate(-1)
+        self.monopoly.roll(3, 4)
+        self.assertEqual(15, len(Chance.cards))
+        self.assertEqual(1, len(self.p1.jail_free_cards))
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(3, 2)
+            self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 5)
+        self.assertTrue(self.p1.in_jail)
+        self.assertEqual(1500, self.p1.balance)
+        self.monopoly.bail()
+        self.assertEqual(16, len(Chance.cards))
+        self.assertEqual(0, len(self.p1.jail_free_cards))
+        self.assertFalse(self.p1.in_jail)
+        self.assertEqual(1500, self.p1.balance)
+        self.assertTrue(isinstance(Chance.cards[15], GetOutOfJailFreeCard))
 
     def test_community_chest_jail_free_card(self):
-        pass
+        self.assertEqual(16, len(CommunityChest.cards))
+        self.assertEqual(0, len(self.p1.jail_free_cards))
+        while not isinstance(CommunityChest.cards[0], GetOutOfJailFreeCard):
+            CommunityChest.cards.rotate(-1)
+        self.monopoly.roll(1, 1)
+        self.assertEqual(15, len(CommunityChest.cards))
+        self.assertEqual(1, len(self.p1.jail_free_cards))
+        self.monopoly.end_turn()
+        self.monopoly.roll(4, 4)
+        self.monopoly.end_turn()
+        self.monopoly.roll(4, 4)
+        self.assertTrue(self.p1.in_jail)
+        self.assertEqual(1500, self.p1.balance)
+        self.monopoly.bail()
+        self.assertEqual(16, len(CommunityChest.cards))
+        self.assertEqual(0, len(self.p1.jail_free_cards))
+        self.assertFalse(self.p1.in_jail)
+        self.assertEqual(1500, self.p1.balance)
+        self.assertTrue(isinstance(CommunityChest.cards[15], GetOutOfJailFreeCard))
 
     def test_both_jail_free_cards(self):
+        while not isinstance(CommunityChest.cards[0], GetOutOfJailFreeCard):
+            CommunityChest.cards.rotate(-1)
+        while not isinstance(Chance.cards[0], GetOutOfJailFreeCard):
+            Chance.cards.rotate(-1)
+        self.monopoly.roll(1, 1)
+        self.assertEqual(15, len(CommunityChest.cards))
+        self.assertEqual(1, len(self.p1.jail_free_cards))
+        self.monopoly.end_turn()
+        self.monopoly.roll(4, 1)
+        self.assertEqual(15, len(Chance.cards))
+        self.assertEqual(2, len(self.p1.jail_free_cards))
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(3, 2)
+            self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 5)
+        self.assertTrue(self.p1.in_jail)
+        self.assertEqual(1500, self.p1.balance)
+        self.monopoly.bail()
+        self.assertEqual(16, len(CommunityChest.cards))
+        self.assertEqual(15, len(Chance.cards))
+        self.assertEqual(1, len(self.p1.jail_free_cards))
+        self.assertEqual(CardType.CHANCE, self.p1.jail_free_cards[0].card_type)
+        self.assertFalse(self.p1.in_jail)
+        self.assertEqual(1500, self.p1.balance)
+        self.assertTrue(isinstance(CommunityChest.cards[15], GetOutOfJailFreeCard))
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(3, 1)
+            self.monopoly.end_turn()
+        self.monopoly.roll(5, 5)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 4)
+        self.assertEqual(1500, self.p1.balance)
+        self.monopoly.bail()
+        self.assertEqual(16, len(CommunityChest.cards))
+        self.assertEqual(16, len(Chance.cards))
+        self.assertEqual(0, len(self.p1.jail_free_cards))
+        self.assertFalse(self.p1.in_jail)
+        self.assertEqual(1500, self.p1.balance)
+        self.assertTrue(isinstance(CommunityChest.cards[15], GetOutOfJailFreeCard))
+        self.assertTrue(isinstance(Chance.cards[15], GetOutOfJailFreeCard))
+
+    def test_roll_doubles_land_on_gtj(self):
         pass
 
     def test_go_nearest_railroad_pass_go(self):
