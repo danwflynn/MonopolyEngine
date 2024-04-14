@@ -504,7 +504,7 @@ class MonopolyTestCases(unittest.TestCase):
         self.assertEqual(self.p1.location, self.p2.location)
         self.assertEqual(1350, self.p1.balance)
         self.assertEqual(1450, self.p2.balance)
-        self.assertEqual(1, self.p2.rent_multiplier)
+        self.assertEqual(False, self.p2.rent_multiplier)
 
     def test_buy_all_railroads(self):
         self.monopoly.roll(4, 1)
@@ -561,7 +561,7 @@ class MonopolyTestCases(unittest.TestCase):
         self.monopoly.roll(3, 4)
         self.assertEqual(1468, self.p1.balance)
         self.assertEqual(1430, self.p3.balance)
-        self.assertEqual(1, self.p3.rent_multiplier)
+        self.assertEqual(False, self.p3.rent_multiplier)
         self.monopoly.end_turn()
         self.monopoly.roll(5, 5)
         self.monopoly.end_turn()
@@ -1348,6 +1348,102 @@ class MonopolyTestCases(unittest.TestCase):
         self.p1.build_houses("Park Place", 1)
         with self.assertRaises(Exception):
             self.p1.build_hotel("Boardwalk")
+
+    def test_try_to_reset_with_houses(self):
+        self.monopoly.roll(1, 2)
+        self.p1.purchase_location()
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 4)
+            self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 4)
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 5)
+            self.monopoly.end_turn()
+        self.monopoly.roll(1, 3)
+        self.p1.purchase_location()
+        self.assertEqual(1580, self.p1.balance)
+        self.assertEqual(2, len(self.p1.properties))
+        for prop in self.p1.properties:
+            if prop.name == "Mediterranean Avenue":
+                self.assertEqual(4, prop.rent)
+            elif prop.name == "Baltic Avenue":
+                self.assertEqual(8, prop.rent)
+
+        self.p1.build_houses("Mediterranean Avenue", 1)
+
+        with self.assertRaises(Exception):
+            self.p1.location.space.reset()
+
+    def test_reset_railroads(self):
+        for i in range(3):
+            self.monopoly.roll(1, 4)
+            self.monopoly.end_turn()
+        self.p1.purchase_location()
+        self.monopoly.roll(4, 6)
+        self.p1.purchase_location()
+        self.monopoly.end_turn()
+        self.monopoly.roll(4, 4)
+        self.monopoly.end_turn()
+        self.monopoly.roll(1, 4)
+        self.monopoly.end_turn()
+        self.p2.purchase_location()
+        self.p2.location.space.rent = 999999
+        self.monopoly.roll(3, 2)
+        self.monopoly.end_turn()
+        railroads = self.p1.properties.copy()
+        for prop in railroads:
+            self.assertEqual(self.p1, prop.owner)
+            self.assertEqual(50, prop.rent)
+        self.monopoly.roll(2, 1)
+        self.p1.player_mortgage("Reading Railroad")
+        self.p1.player_mortgage("Pennsylvania Railroad")
+        self.p1.declare_bankruptcy()
+        self.assertEqual(0, len(self.p1.properties))
+        self.assertEqual(2, len(railroads))
+        for prop in railroads:
+            self.assertEqual(None, prop.owner)
+            self.assertEqual(25, prop.rent)
+
+    def test_reset_utilities(self):
+        self.monopoly.roll(6, 6)
+        self.p1.purchase_location()
+        self.assertFalse(self.p1.location.space.both_owned)
+        self.monopoly.end_turn()
+        self.monopoly.roll(4, 4)
+        self.monopoly.end_turn()
+        self.monopoly.roll(2, 6)
+        self.p1.purchase_location()
+        self.assertTrue(self.p1.location.space.both_owned)
+        self.assertEqual(2, len(self.p1.properties))
+        utilities = self.p1.properties.copy()
+        for prop in utilities:
+            self.assertEqual(self.p1, prop.owner)
+            self.assertTrue(prop.both_owned)
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(5, 5)
+            self.monopoly.end_turn()
+        self.monopoly.roll(6, 5)
+        self.p2.purchase_location()
+        self.monopoly.end_turn()
+        self.p2.location.space.rent = 999999
+        self.monopoly.roll(3, 2)
+        self.monopoly.end_turn()
+        self.monopoly.roll(2, 1)
+        self.p1.player_mortgage("Electric Company")
+        self.p1.player_mortgage("Water Works")
+        self.p1.declare_bankruptcy()
+        self.assertEqual(0, len(self.p1.properties))
+        self.assertEqual(2, len(utilities))
+        for prop in utilities:
+            self.assertEqual(None, prop.owner)
+            self.assertFalse(prop.both_owned)
 
 
 if __name__ == '__main__':
