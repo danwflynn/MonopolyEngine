@@ -1240,22 +1240,66 @@ class MonopolyTestCases(unittest.TestCase):
         self.assertEqual("Free Parking", self.p2.location.space.name)
 
     def test_go_nearest_railroad_pass_go(self):
-        pass
+        while Chance.cards[0].message != "Advance to the nearest railroad. If unowned, you " \
+                                         "may buy it from the bank. If owned, pay the owner twice the rental to " \
+                                         "which they are otherwise entitled.":
+            Chance.cards.rotate(-1)
+        self.assertEqual("Advance to the nearest railroad. If unowned, you may buy it from the bank. "
+                         "If owned, pay the owner twice the rental to which they are otherwise entitled.",
+                         Chance.cards[0].message)
+        for i in range(2):
+            self.monopoly.roll(5, 5)
+            self.monopoly.end_turn()
+        self.monopoly.roll(6, 5)
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 5)
+            self.monopoly.end_turn()
+        self.monopoly.roll(3, 2)
+        self.assertEqual(1700, self.p1.balance)
+        self.assertEqual("Reading Railroad", self.p1.location.space.name)
 
     def test_go_nearest_utility_pass_go(self):
-        pass
+        while Chance.cards[0].message != "Advance to the nearest utility. If unowned, you may buy it from the bank." \
+                      "If owned, throw dice and pay owner a total ten times amount thrown.":
+            Chance.cards.rotate(-1)
+        self.assertEqual("Advance to the nearest utility. If unowned, you may buy it from the bank."
+                         "If owned, throw dice and pay owner a total ten times amount thrown.",
+                         Chance.cards[0].message)
+        for i in range(2):
+            self.monopoly.roll(5, 5)
+            self.monopoly.end_turn()
+        self.monopoly.roll(6, 5)
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 5)
+            self.monopoly.end_turn()
+        self.monopoly.roll(3, 2)
+        self.assertEqual(1700, self.p1.balance)
+        self.assertEqual("Electric Company", self.p1.location.space.name)
 
     def test_try_to_mortgage_unowned_property(self):
-        pass
+        self.monopoly.roll(3, 2)
+        with self.assertRaises(Exception):
+            self.p1.location.space.prop_mortgage()
 
     def test_try_to_un_mortgage_unowned_property(self):
-        pass
+        self.monopoly.roll(3, 2)
+        with self.assertRaises(Exception):
+            self.p1.location.space.prop_un_mortgage()
 
     def test_try_to_mortgage_mortgaged_property(self):
-        pass
+        self.monopoly.roll(3, 2)
+        self.p1.purchase_location()
+        self.p1.player_mortgage("Reading Railroad")
+        with self.assertRaises(Exception):
+            self.p1.location.space.prop_mortgage()
 
     def test_try_to_un_mortgage_un_mortgaged_property(self):
-        pass
+        self.monopoly.roll(3, 2)
+        self.p1.purchase_location()
+        with self.assertRaises(Exception):
+            self.p1.location.space.prop_un_mortgage()
 
     def test_cant_afford_house(self):
         while Chance.cards[0].message != "Make general repairs on all you property: for each house pay " \
