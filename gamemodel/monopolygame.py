@@ -120,7 +120,7 @@ class MonopolyGame:
         for player in self.active_players:
             if player.debt != 0:
                 raise Exception("Can't end turn when a player is in debt")
-        if self.doubles_in_a_row == 0 and not player_out:
+        if (self.doubles_in_a_row == 0 or self.active_players[0].in_jail) and not player_out:
             self.active_players.rotate(-1)
         self.roll_available = True
 

@@ -1229,7 +1229,15 @@ class MonopolyTestCases(unittest.TestCase):
         self.assertTrue(isinstance(Chance.cards[15], GetOutOfJailFreeCard))
 
     def test_roll_doubles_land_on_gtj(self):
-        pass
+        for i in range(3):
+            self.monopoly.roll(6, 4)
+            self.monopoly.end_turn()
+        self.monopoly.roll(5, 5)
+        self.monopoly.end_turn()
+        self.monopoly.roll(5, 5)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 4)
+        self.assertEqual("Free Parking", self.p2.location.space.name)
 
     def test_go_nearest_railroad_pass_go(self):
         pass
