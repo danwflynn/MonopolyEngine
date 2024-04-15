@@ -1730,7 +1730,7 @@ class MonopolyTestCases(unittest.TestCase):
         self.p1.build_hotel("Baltic Avenue")
 
         with self.assertRaises(Exception):
-            self.p1.sell_houses("Baltic Avenue", 1)
+            self.p1.sell_houses("Mediterranean Avenue", 1)
 
     def test_sell_houses_violate_one_building_difference(self):
         self.monopoly.roll(1, 2)
