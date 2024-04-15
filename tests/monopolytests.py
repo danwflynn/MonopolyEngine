@@ -1899,6 +1899,42 @@ class MonopolyTestCases(unittest.TestCase):
         with self.assertRaises(Exception):
             self.p1.build_houses("Mediterranean Avenue", 6)
 
+    def test_sell_hotel_get_no_houses_back(self):
+        self.monopoly.roll(1, 2)
+        self.p1.purchase_location()
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 4)
+            self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 4)
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 5)
+            self.monopoly.end_turn()
+        self.monopoly.roll(1, 3)
+        self.p1.purchase_location()
+        self.assertEqual(1580, self.p1.balance)
+        self.assertEqual(2, len(self.p1.properties))
+        for prop in self.p1.properties:
+            if prop.name == "Mediterranean Avenue":
+                self.assertEqual(4, prop.rent)
+            elif prop.name == "Baltic Avenue":
+                self.assertEqual(8, prop.rent)
+        for i in range(4):
+            self.p1.build_houses("Mediterranean Avenue", 1)
+            self.p1.build_houses("Baltic Avenue", 1)
+
+        self.p1.build_hotel("Mediterranean Avenue")
+        self.monopoly.property_manager.houses = 0
+        self.p1.sell_hotel("Mediterranean Avenue")
+
+        self.assertEqual(0, self.p1.location.space.houses)
+        self.assertEqual(4, self.p1.location.space.rent)
+
 
 if __name__ == '__main__':
     unittest.main()
