@@ -1445,6 +1445,364 @@ class MonopolyTestCases(unittest.TestCase):
             self.assertEqual(None, prop.owner)
             self.assertFalse(prop.both_owned)
 
+    def test_claim_none(self):
+        self.monopoly.roll(1, 2)
+        with self.assertRaises(Exception):
+            self.monopoly.property_manager.claim(self.p1.location.space, None)
+
+    def test_claim_what_you_already_own(self):
+        self.monopoly.roll(1, 2)
+        self.p1.purchase_location()
+        with self.assertRaises(Exception):
+            self.monopoly.property_manager.claim(self.p1.location.space, self.p1)
+
+    def test_claim_when_buildings_in_group(self):
+        self.monopoly.roll(1, 2)
+        self.p1.purchase_location()
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 4)
+            self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 4)
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 5)
+            self.monopoly.end_turn()
+        self.monopoly.roll(1, 3)
+        self.p1.purchase_location()
+        self.assertEqual(1580, self.p1.balance)
+        self.assertEqual(2, len(self.p1.properties))
+        for prop in self.p1.properties:
+            if prop.name == "Mediterranean Avenue":
+                self.assertEqual(4, prop.rent)
+            elif prop.name == "Baltic Avenue":
+                self.assertEqual(8, prop.rent)
+
+        self.p1.build_houses("Baltic Avenue", 1)
+
+        with self.assertRaises(Exception):
+            self.monopoly.property_manager.claim(self.p1.location.space, self.p2)
+
+    def test_claim_when_buildings_on_it(self):
+        self.monopoly.roll(1, 2)
+        self.p1.purchase_location()
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 4)
+            self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 4)
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 5)
+            self.monopoly.end_turn()
+        self.monopoly.roll(1, 3)
+        self.p1.purchase_location()
+        self.assertEqual(1580, self.p1.balance)
+        self.assertEqual(2, len(self.p1.properties))
+        for prop in self.p1.properties:
+            if prop.name == "Mediterranean Avenue":
+                self.assertEqual(4, prop.rent)
+            elif prop.name == "Baltic Avenue":
+                self.assertEqual(8, prop.rent)
+
+        self.p1.build_houses("Mediterranean Avenue", 1)
+
+        with self.assertRaises(Exception):
+            self.monopoly.property_manager.claim(self.p1.location.space, self.p2)
+
+    def test_build_without_monopoly(self):
+        self.monopoly.roll(1, 2)
+        self.p1.purchase_location()
+        with self.assertRaises(Exception):
+            self.p1.build_houses("Baltic Avenue", 1)
+
+    def test_build_house_with_hotel_already_present(self):
+        self.monopoly.roll(1, 2)
+        self.p1.purchase_location()
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 4)
+            self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 4)
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 5)
+            self.monopoly.end_turn()
+        self.monopoly.roll(1, 3)
+        self.p1.purchase_location()
+        self.assertEqual(1580, self.p1.balance)
+        self.assertEqual(2, len(self.p1.properties))
+        for prop in self.p1.properties:
+            if prop.name == "Mediterranean Avenue":
+                self.assertEqual(4, prop.rent)
+            elif prop.name == "Baltic Avenue":
+                self.assertEqual(8, prop.rent)
+
+        for i in range(4):
+            self.p1.build_houses("Mediterranean Avenue", 1)
+            self.p1.build_houses("Baltic Avenue", 1)
+
+        self.p1.build_hotel("Mediterranean Avenue")
+        self.p1.build_hotel("Baltic Avenue")
+
+        with self.assertRaises(Exception):
+            self.p1.build_houses("Mediterranean Avenue", 1)
+
+    def test_build_hotel_with_hotel_already_present(self):
+        self.monopoly.roll(1, 2)
+        self.p1.purchase_location()
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 4)
+            self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 4)
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 5)
+            self.monopoly.end_turn()
+        self.monopoly.roll(1, 3)
+        self.p1.purchase_location()
+        self.assertEqual(1580, self.p1.balance)
+        self.assertEqual(2, len(self.p1.properties))
+        for prop in self.p1.properties:
+            if prop.name == "Mediterranean Avenue":
+                self.assertEqual(4, prop.rent)
+            elif prop.name == "Baltic Avenue":
+                self.assertEqual(8, prop.rent)
+
+        for i in range(4):
+            self.p1.build_houses("Mediterranean Avenue", 1)
+            self.p1.build_houses("Baltic Avenue", 1)
+
+        self.p1.build_hotel("Mediterranean Avenue")
+        with self.assertRaises(Exception):
+            self.p1.build_hotel("Mediterranean Avenue")
+
+    def test_build_hotel_with_not_enough_houses(self):
+        self.monopoly.roll(1, 2)
+        self.p1.purchase_location()
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 4)
+            self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 4)
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 5)
+            self.monopoly.end_turn()
+        self.monopoly.roll(1, 3)
+        self.p1.purchase_location()
+        self.assertEqual(1580, self.p1.balance)
+        self.assertEqual(2, len(self.p1.properties))
+        for prop in self.p1.properties:
+            if prop.name == "Mediterranean Avenue":
+                self.assertEqual(4, prop.rent)
+            elif prop.name == "Baltic Avenue":
+                self.assertEqual(8, prop.rent)
+
+        for i in range(3):
+            self.p1.build_houses("Mediterranean Avenue", 1)
+            self.p1.build_houses("Baltic Avenue", 1)
+
+        self.p1.build_houses("Mediterranean Avenue", 1)
+
+        with self.assertRaises(Exception):
+            self.p1.build_hotel("Mediterranean Avenue")
+
+    def test_not_enough_hotels(self):
+        self.monopoly.roll(1, 2)
+        self.p1.purchase_location()
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 4)
+            self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 4)
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 5)
+            self.monopoly.end_turn()
+        self.monopoly.roll(1, 3)
+        self.p1.purchase_location()
+        self.assertEqual(1580, self.p1.balance)
+        self.assertEqual(2, len(self.p1.properties))
+        for prop in self.p1.properties:
+            if prop.name == "Mediterranean Avenue":
+                self.assertEqual(4, prop.rent)
+            elif prop.name == "Baltic Avenue":
+                self.assertEqual(8, prop.rent)
+
+        for i in range(4):
+            self.p1.build_houses("Mediterranean Avenue", 1)
+            self.p1.build_houses("Baltic Avenue", 1)
+
+        self.monopoly.property_manager.hotels = 0
+
+        with self.assertRaises(Exception):
+            self.p1.build_hotel("Mediterranean Avenue")
+
+    def test_sell_too_many_houses(self):
+        self.monopoly.roll(1, 2)
+        self.p1.purchase_location()
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 4)
+            self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 4)
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 5)
+            self.monopoly.end_turn()
+        self.monopoly.roll(1, 3)
+        self.p1.purchase_location()
+        self.assertEqual(1580, self.p1.balance)
+        self.assertEqual(2, len(self.p1.properties))
+        for prop in self.p1.properties:
+            if prop.name == "Mediterranean Avenue":
+                self.assertEqual(4, prop.rent)
+            elif prop.name == "Baltic Avenue":
+                self.assertEqual(8, prop.rent)
+
+        for i in range(4):
+            self.p1.build_houses("Mediterranean Avenue", 1)
+            self.p1.build_houses("Baltic Avenue", 1)
+
+        with self.assertRaises(Exception):
+            self.p1.sell_houses("Baltic Avenue", 5)
+
+    def test_sell_houses_when_hotel_present(self):
+        self.monopoly.roll(1, 2)
+        self.p1.purchase_location()
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 4)
+            self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 4)
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 5)
+            self.monopoly.end_turn()
+        self.monopoly.roll(1, 3)
+        self.p1.purchase_location()
+        self.assertEqual(1580, self.p1.balance)
+        self.assertEqual(2, len(self.p1.properties))
+        for prop in self.p1.properties:
+            if prop.name == "Mediterranean Avenue":
+                self.assertEqual(4, prop.rent)
+            elif prop.name == "Baltic Avenue":
+                self.assertEqual(8, prop.rent)
+
+        for i in range(4):
+            self.p1.build_houses("Mediterranean Avenue", 1)
+            self.p1.build_houses("Baltic Avenue", 1)
+
+        self.p1.build_hotel("Baltic Avenue")
+
+        with self.assertRaises(Exception):
+            self.p1.sell_houses("Baltic Avenue", 1)
+
+    def test_sell_houses_violate_one_building_difference(self):
+        self.monopoly.roll(1, 2)
+        self.p1.purchase_location()
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 4)
+            self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 4)
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 5)
+            self.monopoly.end_turn()
+        self.monopoly.roll(1, 3)
+        self.p1.purchase_location()
+        self.assertEqual(1580, self.p1.balance)
+        self.assertEqual(2, len(self.p1.properties))
+        for prop in self.p1.properties:
+            if prop.name == "Mediterranean Avenue":
+                self.assertEqual(4, prop.rent)
+            elif prop.name == "Baltic Avenue":
+                self.assertEqual(8, prop.rent)
+
+        for i in range(4):
+            self.p1.build_houses("Mediterranean Avenue", 1)
+            self.p1.build_houses("Baltic Avenue", 1)
+
+        with self.assertRaises(Exception):
+            self.p1.sell_houses("Baltic Avenue", 2)
+
+    def test_no_hotel_to_sell(self):
+        self.monopoly.roll(1, 2)
+        self.p1.purchase_location()
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 4)
+            self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 6)
+        self.monopoly.end_turn()
+        self.monopoly.roll(6, 4)
+        self.monopoly.end_turn()
+        for i in range(2):
+            self.monopoly.roll(6, 5)
+            self.monopoly.end_turn()
+        self.monopoly.roll(1, 3)
+        self.p1.purchase_location()
+        self.assertEqual(1580, self.p1.balance)
+        self.assertEqual(2, len(self.p1.properties))
+        for prop in self.p1.properties:
+            if prop.name == "Mediterranean Avenue":
+                self.assertEqual(4, prop.rent)
+            elif prop.name == "Baltic Avenue":
+                self.assertEqual(8, prop.rent)
+
+        for i in range(4):
+            self.p1.build_houses("Mediterranean Avenue", 1)
+            self.p1.build_houses("Baltic Avenue", 1)
+
+        with self.assertRaises(Exception):
+            self.p1.sell_hotel("Baltic Avenue")
+
+    def test_reset_with_no_owner(self):
+        self.monopoly.roll(1, 2)
+        with self.assertRaises(Exception):
+            self.monopoly.property_manager.reset(self.p1.location.space)
+
 
 if __name__ == '__main__':
     unittest.main()
