@@ -128,7 +128,6 @@ class PropertyManager:
         if prop.houses == 0:
             prop.rent = prop.rents[0] * 2
 
-    # Fix this to keep the one building of separation rule
     def sell_hotel(self, prop: Housing):
         if prop.hotels < 1:
             raise Exception(prop.name + " has no hotel to sell")
