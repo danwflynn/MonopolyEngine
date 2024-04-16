@@ -1935,6 +1935,23 @@ class MonopolyTestCases(unittest.TestCase):
         self.assertEqual(0, self.p1.location.space.houses)
         self.assertEqual(4, self.p1.location.space.rent)
 
+    def test_declare_bankruptcy_with_jail_free_card(self):
+        while not isinstance(CommunityChest.cards[0], GetOutOfJailFreeCard):
+            CommunityChest.cards.rotate(-1)
+        self.monopoly.roll(3, 6)
+        self.p1.purchase_location()
+        self.p1.location.space.rent = 99999
+        self.monopoly.end_turn()
+        self.monopoly.roll(1, 1)
+        self.assertEqual(15, len(CommunityChest.cards))
+        self.assertEqual(1, len(self.p2.jail_free_cards))
+        self.monopoly.end_turn()
+        self.monopoly.roll(4, 3)
+        self.p2.declare_bankruptcy()
+        self.assertEqual(16, len(CommunityChest.cards))
+        self.assertEqual(0, len(self.p2.jail_free_cards))
+        self.assertTrue(isinstance(CommunityChest.cards[15], GetOutOfJailFreeCard))
+
 
 if __name__ == '__main__':
     unittest.main()

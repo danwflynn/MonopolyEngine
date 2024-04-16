@@ -99,6 +99,8 @@ class Player:
         self.properties.clear()
         self.bankrupt = True
         self.balance = 0
+        while len(self.jail_free_cards) != 0:
+            self.use_jail_free_card()
 
     def go_to_jail(self):
         while not isinstance(self.location.space, Jail):
