@@ -41,13 +41,13 @@ As previous stated, the rules are based on the standard monopoly rules with a fe
 
 ### Properties, Monopolies, Housing, and Hotels
 
-* You must maintains a 1 building difference between properties in a monopoly.
+* You must maintains a 1 building difference between properties in a monopoly when building.
 * You can mortgage properties in your monopoly and still keep the benefits of the monopoly as long as all the properties in that monopoly are owned by you.
 * When you un-mortgage a property, you must pay the mortgage price plus 10% interest.
 * When selling houses and hotels back to the bank, you only get back half of what you paid for them.
 * You can't move houses between properties freely. You would have to sell the house and then buy it back for the other property.
 * The bank has a limited amount of houses and hotels which can end up restricting building purchases.
-* The 1 building rule can be violated in one instance. When you sell a hotel to the bank and don't get enough houses back you'll just get the money.
+* The 1 building rule can be violated when you sell buildings.
 * If the above situation creates a housing differential greater than one, any proceeding building purchase/sale must restore the 1 building difference.
 
 ### Trade

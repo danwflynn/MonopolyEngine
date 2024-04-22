@@ -1762,8 +1762,9 @@ class MonopolyTestCases(unittest.TestCase):
             self.p1.build_houses("Mediterranean Avenue", 1)
             self.p1.build_houses("Baltic Avenue", 1)
 
-        with self.assertRaises(Exception):
-            self.p1.sell_houses("Baltic Avenue", 2)
+        self.assertEqual(1180, self.p1.balance)
+        self.p1.sell_houses("Baltic Avenue", 2)
+        self.assertEqual(1230, self.p1.balance)
 
     def test_no_hotel_to_sell(self):
         self.monopoly.roll(1, 2)

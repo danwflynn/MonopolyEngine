@@ -113,14 +113,6 @@ class PropertyManager:
         for p in self.monopoly_color_groups[prop.color]:
             if p.hotels:
                 raise Exception(f'{p.name} has a hotel')
-        proposed_house_amounts = []
-        for p in self.monopoly_color_groups[prop.color]:
-            if p is prop:
-                proposed_house_amounts.append(p.houses - n)
-            else:
-                proposed_house_amounts.append(p.houses)
-        if max(proposed_house_amounts) - min(proposed_house_amounts) > 1:
-            raise Exception("Properties in a monopoly can only have a 1 building difference")
         prop.houses -= n
         prop.owner.balance += n * prop.building_cost // 2
         self.houses += n
