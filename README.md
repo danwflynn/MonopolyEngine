@@ -53,4 +53,8 @@ As previous stated, the rules are based on the standard monopoly rules with a fe
 ### Trade
 
 * Players can trade money and assets at any time in the game.
+* This includes get out of jail free cards.
+* You can keep buildings intact if and only if you trade the whole monopoly.
+* You can't make deals that exempt players from paying rent, give players partial ownership, or anything of the sort. You can only trade money and assets.
+* You may forgive debts through trade.
 
